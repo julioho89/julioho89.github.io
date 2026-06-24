@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misión Geografía · Repaso de Mía Sabrina</title>
+<style>
+  :root{
+    --azul:#1F6FB2; --azul-osc:#0B3D5C; --azul-claro:#D5E8F0;
+    --verde:#2D7D46; --verde-claro:#E3F3E8; --dorado:#E0A93B;
+    --rojo:#D64545; --rojo-claro:#FBE6E6; --gris:#5b6b78;
+    --ok:#2D7D46; --okbg:#E3F3E8; --malbg:#FBE6E6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Segoe UI',Arial,Helvetica,sans-serif;
+    color:#1b2a36; min-height:100vh;
+    background:linear-gradient(160deg,#0B3D5C 0%,#1F6FB2 55%,#2D9CC9 100%);
+    background-attachment:fixed;
+    padding:14px; display:flex; justify-content:center; align-items:flex-start;
+  }
+  .app{width:100%; max-width:820px;}
+  .card{
+    background:#fff; border-radius:20px; padding:24px 22px;
+    box-shadow:0 14px 40px rgba(0,0,0,.28); animation:pop .35s ease;
+  }
+  @keyframes pop{from{opacity:0; transform:translateY(14px) scale(.98);}to{opacity:1; transform:none;}}
+  h1{font-size:1.9rem; color:var(--azul-osc); line-height:1.15;}
+  h2{font-size:1.35rem; color:var(--azul-osc); margin-bottom:6px;}
+  p{line-height:1.55;}
+  .sub{color:var(--gris); margin-top:6px;}
+  .topbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+    background:var(--azul-osc); color:#fff; border-radius:16px; padding:10px 16px; margin-bottom:14px;
+  }
+  .topbar .chip{display:flex; align-items:center; gap:6px; font-weight:600; font-size:.95rem;}
+  .hearts{letter-spacing:2px;}
+  .progress-wrap{height:12px; background:rgba(255,255,255,.25); border-radius:8px; overflow:hidden; margin-top:10px;}
+  .progress-bar{height:100%; width:0%; background:linear-gradient(90deg,#7BD389,#E0A93B); transition:width .4s ease;}
+  .btn{
+    display:inline-block; border:none; cursor:pointer; font-size:1.05rem; font-weight:700;
+    padding:14px 22px; border-radius:14px; background:var(--azul); color:#fff;
+    transition:transform .12s, box-shadow .12s, background .2s; box-shadow:0 4px 0 #155488;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(2px); box-shadow:0 2px 0 #155488;}
+  .btn.green{background:var(--verde); box-shadow:0 4px 0 #1d5c32;}
+  .btn.gold{background:var(--dorado); color:#3a2a00; box-shadow:0 4px 0 #b07d1d;}
+  .btn.ghost{background:#eef3f7; color:var(--azul-osc); box-shadow:0 4px 0 #cfdae3;}
+  .btn:disabled{opacity:.55; cursor:not-allowed; transform:none;}
+  .center{text-align:center;}
+  .mt{margin-top:18px;} .mt2{margin-top:26px;}
+  .options{display:flex; flex-direction:column; gap:12px; margin-top:18px;}
+  .opt{
+    text-align:left; background:#f3f7fb; border:2px solid #dbe6ef; color:#1b2a36;
+    padding:14px 16px; border-radius:14px; font-size:1.04rem; cursor:pointer; transition:.15s;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .opt:hover{border-color:var(--azul); background:#e9f2fa;}
+  .opt .key{font-weight:800; color:var(--azul); }
+  .opt.correct{background:var(--okbg); border-color:var(--ok); color:#14431f;}
+  .opt.wrong{background:var(--malbg); border-color:var(--rojo); color:#6e1b1b;}
+  .opt.disabled{pointer-events:none; opacity:.8;}
+  .tf-row{display:flex; gap:14px; margin-top:18px;}
+  .tf-row .opt{justify-content:center; font-weight:800; flex:1;}
+  input[type=text]{
+    width:100%; padding:14px 16px; font-size:1.05rem; border:2px solid #cdd9e3;
+    border-radius:12px; margin-top:14px;
+  }
+  input[type=text]:focus{outline:none; border-color:var(--azul);}
+  select{
+    width:100%; padding:11px 12px; font-size:1rem; border:2px solid #cdd9e3; border-radius:10px; background:#fff;
+  }
+  select:focus{outline:none; border-color:var(--azul);}
+  .match-row{display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap;}
+  .match-left{flex:1; min-width:150px; background:var(--azul-claro); padding:12px; border-radius:10px; font-weight:600; color:var(--azul-osc);}
+  .match-pick{flex:1; min-width:150px;}
+  .classify-item{display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap;}
+  .classify-item .lab{flex:1; min-width:150px; background:#f3f7fb; border:2px solid #dbe6ef; padding:12px; border-radius:10px; font-weight:600;}
+  .order-pool, .order-seq{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; min-height:54px;
+    padding:10px; border-radius:12px;}
+  .order-pool{background:#eef3f7; border:2px dashed #c3d2de;}
+  .order-seq{background:var(--azul-claro); border:2px solid #b9d6e8;}
+  .chip{background:#fff; border:2px solid var(--azul); color:var(--azul-osc); padding:10px 14px;
+    border-radius:30px; font-weight:700; cursor:pointer; transition:.12s;}
+  .chip:hover{background:var(--azul); color:#fff;}
+  .chip .num{display:inline-block; background:var(--dorado); color:#3a2a00; border-radius:50%;
+    width:22px; height:22px; line-height:22px; text-align:center; margin-right:7px; font-size:.85rem;}
+  .hint{color:var(--gris); font-size:.92rem; margin-top:8px;}
+  .feedback{margin-top:18px; padding:16px; border-radius:14px; font-size:1.02rem; line-height:1.55; display:none;}
+  .feedback.show{display:block; animation:pop .25s ease;}
+  .feedback.good{background:var(--okbg); border:2px solid var(--ok); color:#14431f;}
+  .feedback.bad{background:var(--malbg); border:2px solid var(--rojo); color:#6e1b1b;}
+  .feedback b{display:block; margin-bottom:4px; font-size:1.08rem;}
+  .modgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-top:20px;}
+  .modcard{background:#f3f7fb; border:2px solid #dbe6ef; border-radius:16px; padding:16px; text-align:center; cursor:pointer; transition:.15s; position:relative;}
+  .modcard:hover{border-color:var(--azul); transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,.1);}
+  .modcard .mi{font-size:2.2rem;}
+  .modcard .mt-t{font-weight:800; color:var(--azul-osc); margin-top:6px;}
+  .modcard .md{font-size:.85rem; color:var(--gris); margin-top:4px;}
+  .modcard.done{background:var(--verde-claro); border-color:var(--verde);}
+  .modcard .check{position:absolute; top:8px; right:10px; font-size:1.2rem;}
+  .modcard .score-mini{font-size:.8rem; color:var(--verde); font-weight:700; margin-top:6px;}
+  .badges{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:16px;}
+  .badge{background:#f3f7fb; border:2px dashed #c3d2de; border-radius:14px; padding:12px 14px; text-align:center; width:130px; opacity:.45; transition:.3s;}
+  .badge.earned{opacity:1; background:linear-gradient(160deg,#fff7e6,#ffe9b8); border:2px solid var(--dorado); transform:scale(1.03);}
+  .badge .be{font-size:1.8rem;}
+  .badge .bn{font-size:.82rem; font-weight:800; color:var(--azul-osc); margin-top:4px;}
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:14px; margin-top:18px;}
+  .stat{background:#f3f7fb; border-radius:14px; padding:16px; text-align:center;}
+  .stat .num{font-size:1.8rem; font-weight:800; color:var(--azul);}
+  .stat .lab{font-size:.85rem; color:var(--gris); margin-top:4px;}
+  .listbox{margin-top:8px; border-radius:12px; padding:14px;}
+  .listbox.dom{background:var(--verde-claro); border:2px solid var(--verde);}
+  .listbox.ref{background:#FFF3E0; border:2px solid var(--dorado);}
+  .listbox ul{margin:8px 0 0 18px;}
+  .papa{background:var(--azul-osc); color:#fff; border-radius:14px; padding:16px; margin-top:18px; text-align:center; font-size:1.08rem; font-weight:600;}
+  .tag{display:inline-block; background:var(--azul-claro); color:var(--azul-osc); border-radius:20px; padding:4px 12px; font-size:.85rem; font-weight:700; margin-bottom:8px;}
+  .toast{position:fixed; left:50%; top:18px; transform:translateX(-50%); background:var(--dorado); color:#3a2a00; font-weight:800; padding:12px 22px; border-radius:30px; box-shadow:0 8px 20px rgba(0,0,0,.25); z-index:50; opacity:0; transition:.3s; pointer-events:none;}
+  .toast.show{opacity:1; top:26px;}
+  @media(max-width:520px){ h1{font-size:1.5rem;} .card{padding:18px 15px;} .btn{width:100%;} .tf-row{flex-direction:column;} }
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="app" id="app"></div>
+
+<script>
+/* ===================== DATOS DEL JUEGO ===================== */
+const MODULES = [
+  {
+    id:"m1", icon:"\u{1F988}", name:"Feria Geográfica: Nicaragua",
+    desc:"Tu proyecto del tiburón del Lago Cocibolca",
+    intro:"Repasa tu Feria Geográfica sobre Nicaragua y la adaptación al entorno.",
+    questions:[
+      {type:"mc", q:"¿Qué país investigaste en tu Feria Geográfica?",
+        options:["Nicaragua","Japón","Costa Rica","Honduras"], answer:0,
+        fb:"Investigaste la República de Nicaragua y su Lago Cocibolca."},
+      {type:"mc", q:"¿Cuál fue el descubrimiento más sorprendente de tu proyecto?",
+        options:["Un tiburón de mar que vive en un lago de AGUA DULCE (Lago Cocibolca)","Un volcán que lanza agua","Un desierto con nieve","Un río que corre hacia arriba"], answer:0,
+        fb:"El tiburón toro vive en agua dulce gracias a la osmorregulación. ¡Algo casi imposible!"},
+      {type:"mc", q:"¿Qué proceso le permite al tiburón toro vivir tanto en agua dulce como salada?",
+        options:["La osmorregulación","La fotosíntesis","La evaporación","La digestión"], answer:0,
+        fb:"La osmorregulación regula la sal de su cuerpo: en agua dulce sus riñones retienen urea."},
+      {type:"tf", q:"El tiburón toro entra al Lago Cocibolca desde el Mar Caribe nadando por el Río San Juan.",
+        answer:true,
+        fb:"Correcto. El Río San Juan (205 km) es la vía natural de entrada del tiburón."},
+      {type:"mc", q:"¿Cómo cambió tu proyecto la idea de 'adaptación al entorno'?",
+        options:["Tanto los seres vivos como los humanos se adaptan al ambiente, y la acción humana puede protegerlo o dañarlo","Solo los animales se adaptan; los humanos no","El ambiente nunca cambia","La geografía no tiene relación con la biología"], answer:0,
+        fb:"Geografía + biología + acción humana están conectadas. Cuidar el lago es cuidar una maravilla natural."},
+      {type:"tf", q:"La pesca excesiva y la contaminación AUMENTARON la cantidad de tiburones en el lago.",
+        answer:false,
+        fb:"¡Ojo! Es al revés: la DISMINUYERON mucho. (Este fue el error que tú misma corregiste en tu trabajo.)"}
+    ]
+  },
+  {
+    id:"m2", icon:"\u{1F4A7}", name:"Hidrósfera y ciclo del agua",
+    desc:"Evaporación, condensación, precipitación, infiltración",
+    intro:"Domina los cuatro procesos del ciclo del agua.",
+    questions:[
+      {type:"mc", q:"La hidrósfera es...",
+        options:["Toda el agua del planeta en sus 3 estados (sólido, líquido y gaseoso)","Solo los océanos","Solo el agua subterránea","Solo las nubes"], answer:0,
+        fb:"La hidrósfera incluye océanos, agua de los continentes y el vapor de la atmósfera."},
+      {type:"mc", q:'Los dos "superhéroes" que mueven el agua del planeta son:',
+        options:["El Sol (calor) y la gravedad","La Luna y el viento","El fuego y el hielo","Los ríos y los mares"], answer:0,
+        fb:"El Sol calienta (evaporación) y la gravedad empuja hacia abajo (precipitación)."},
+      {type:"match", q:"Relaciona cada proceso con su definición:",
+        pairs:[
+          {left:"Evaporación", right:"El agua líquida se calienta y sube como vapor"},
+          {left:"Condensación", right:"El vapor se enfría y forma nubes"},
+          {left:"Precipitación", right:"El agua cae como lluvia o nieve"},
+          {left:"Infiltración", right:"El agua entra en los poros del suelo"}
+        ],
+        fb:"Cada proceso es una etapa del viaje del agua: sube, se junta, cae y entra al suelo."},
+      {type:"fill", q:"El proceso por el cual el agua de lluvia penetra en el suelo y alimenta los acuíferos se llama ______.",
+        answers:["infiltracion"], fb:"Infiltración: el agua entra por los poros del suelo y las rocas."},
+      {type:"order", q:"Ordena el ciclo del agua desde el inicio:",
+        items:["Evaporación","Condensación","Precipitación","Infiltración"],
+        fb:"El Sol evapora → el vapor se condensa en nubes → precipita → se infiltra en el suelo."},
+      {type:"tf", q:"La condensación es lo mismo que la lluvia.",
+        answer:false,
+        fb:"No. La lluvia es PRECIPITACIÓN. La condensación es cuando el vapor forma las nubes."}
+    ]
+  },
+  {
+    id:"m3", icon:"\u{1F3DE}\u{FE0F}", name:"Agua en movimiento: los ríos",
+    desc:"Curso alto, medio y bajo · erosión, transporte, sedimentación",
+    intro:"Sigue el viaje de un río desde la montaña hasta el mar.",
+    questions:[
+      {type:"order", q:"Ordena los tramos del río desde el nacimiento hasta el mar:",
+        items:["Curso alto","Curso medio","Curso bajo"],
+        fb:"El río nace en la montaña (curso alto), pasa por el valle (medio) y termina en el mar (bajo)."},
+      {type:"match", q:"Relaciona cada tramo del río con su proceso principal:",
+        pairs:[
+          {left:"Curso alto", right:"Erosión (desgasta las rocas)"},
+          {left:"Curso medio", right:"Transporte (arrastra sedimentos)"},
+          {left:"Curso bajo", right:"Sedimentación (deposita el material)"}
+        ],
+        fb:"Alto = erosión, Medio = transporte, Bajo = sedimentación."},
+      {type:"mc", q:"¿En qué tramo se forman los meandros (curvas sinuosas)?",
+        options:["Curso medio","Curso alto","Curso bajo","En ninguno"], answer:0,
+        fb:"En el curso medio el río se ensancha y serpentea formando meandros."},
+      {type:"mc", q:"¿Qué es un delta?",
+        options:["Acumulación de sedimentos en forma de abanico en la desembocadura","Una curva del río en la montaña","Una catarata muy alta","Un lago en el nacimiento"], answer:0,
+        fb:"El delta se forma por sedimentación en el curso bajo, donde el río se une al mar."},
+      {type:"fill", q:"En el curso alto, por la fuerte pendiente, el proceso que domina es la ______.",
+        answers:["erosion"], fb:"Erosión: el agua veloz desgasta y arranca las rocas del relieve."},
+      {type:"tf", q:"En el curso bajo el agua corre muy rápido y erosiona mucho.",
+        answer:false,
+        fb:"No. En el curso bajo el agua va LENTA y deposita (sedimenta) el material que traía."},
+      {type:"mc", q:"Causa y consecuencia: precipitación + pendiente fuerte + gravedad = ?",
+        options:["Erosión y transporte de sedimentos","Evaporación rápida","Formación de glaciares","Más infiltración que nunca"], answer:0,
+        fb:"Mucha lluvia en pendiente = agua veloz = erosión y arrastre de sedimentos."}
+    ]
+  },
+  {
+    id:"m4", icon:"\u{1F3D4}\u{FE0F}", name:"Glaciares y sustentabilidad",
+    desc:"Reservas de agua dulce y reguladores del clima",
+    intro:"Descubre por qué los glaciares son tan importantes.",
+    questions:[
+      {type:"mc", q:"¿Aproximadamente qué porcentaje del agua dulce del planeta almacenan los glaciares?",
+        options:["68,7%","5%","25%","100%"], answer:0,
+        fb:"Los glaciares guardan cerca del 68,7% del agua dulce: son una reserva enorme."},
+      {type:"tf", q:"Los glaciares actúan como reguladores del caudal de los ríos: se derriten lentamente y dan agua cuando no llueve.",
+        answer:true,
+        fb:"Correcto. Son como una 'alcancía' de agua que se gasta poco a poco."},
+      {type:"mc", q:"Si los glaciares se derriten DEMASIADO rápido por el calentamiento global, ¿qué ocurre?",
+        options:["Primero inundaciones y luego sequías permanentes","Solo más agua para siempre","Nada cambia","El planeta se enfría"], answer:0,
+        fb:"Primero sobra agua (inundaciones) y después falta para siempre (sequías)."},
+      {type:"tf", q:"El hielo blanco de los glaciares ayuda a regular la temperatura reflejando la luz del Sol.",
+        answer:true,
+        fb:"Sí. El hielo refleja la radiación solar y ayuda a mantener fresco el planeta."},
+      {type:"mc", q:"¿Por qué los glaciares son clave para la agricultura y el agua potable?",
+        options:["Alimentan los ríos en las épocas secas cuando no llueve","Porque producen lluvia","Porque calientan el agua","Porque limpian el mar"], answer:0,
+        fb:"Su deshielo lento mantiene el caudal de los ríos en verano."}
+    ]
+  },
+  {
+    id:"m5", icon:"\u{1F331}", name:"Exploradores del suelo",
+    desc:"Composición, funciones, textura y estructura",
+    intro:"El suelo está VIVO. Conoce de qué está hecho.",
+    questions:[
+      {type:"mc", q:"¿Cuál define mejor la función ecológica del suelo?",
+        options:["Es un ecosistema vivo que regula el clima, recicla nutrientes, produce alimentos y purifica el agua","Es basura orgánica sin utilidad","Es una capa inerte que solo sostiene edificios","Solo sirve para retener agua de lluvia"], answer:0,
+        fb:"El suelo es un ecosistema vivo con muchas funciones ecológicas."},
+      {type:"classify", q:"Clasifica cada suelo según su TEXTURA:",
+        categories:["Arenoso","Limoso","Arcilloso"],
+        items:[
+          {text:"Granos grandes, áspero, el agua pasa de largo", cat:"Arenoso"},
+          {text:"Fino y suave como la harina, retiene agua moderada", cat:"Limoso"},
+          {text:"Partículas ultra pequeñas, pegajoso, retiene muchísima agua", cat:"Arcilloso"}
+        ],
+        fb:"Textura = tamaño del grano: arenoso (grande), limoso (mediano), arcilloso (muy pequeño)."},
+      {type:"match", q:"Relaciona cada ESTRUCTURA del suelo con su forma:",
+        pairs:[
+          {left:"Granular", right:"Como migas de galleta (ideal para cultivar)"},
+          {left:"En bloques", right:"Piezas que encajan como un rompecabezas"},
+          {left:"Laminar", right:"Capas finas y horizontales, como panquecas"}
+        ],
+        fb:"Estructura = cómo se agrupan los terrones del suelo."},
+      {type:"mc", q:"¿Qué fracción del suelo aporta el aire para que respiren las raíces y los organismos?",
+        options:["Fracción gaseosa","Fracción sólida","Fracción líquida","Ninguna"], answer:0,
+        fb:"Fracción gaseosa (25%): oxígeno y dióxido de carbono. La sólida es 50% y la líquida 25%."},
+      {type:"fill", q:"El suelo ______ tiene partículas grandes y NO retiene el agua (pasa como en un colador).",
+        answers:["arenoso"], fb:"Arenoso: granos grandes, áspero, deja escapar el agua."},
+      {type:"mc", q:"Para la agricultura, ¿qué estructura es la mejor porque deja espacio para el aire y el agua?",
+        options:["Granular","Laminar","En bloques","Ninguna"], answer:0,
+        fb:"La estructura granular (migas de galleta) es la ideal para los cultivos."}
+    ]
+  },
+  {
+    id:"m6", icon:"\u{1F9EA}", name:"La receta del suelo",
+    desc:"Los 5 factores formadores del suelo",
+    intro:"¿Qué se necesita para que se forme un suelo? Tarda miles de años.",
+    questions:[
+      {type:"match", q:"Relaciona cada factor formador del suelo con su papel:",
+        pairs:[
+          {left:"Roca madre", right:"El material original que da los minerales"},
+          {left:"Clima", right:"La temperatura y la lluvia rompen la roca"},
+          {left:"Relieve", right:"Decide si el suelo es profundo o delgado"},
+          {left:"Organismos", right:"Aportan materia orgánica y cavan túneles"},
+          {left:"Tiempo", right:"Los años para que todo actúe"}
+        ],
+        fb:"Roca madre, clima, relieve, organismos y tiempo: los 5 factores formadores."},
+      {type:"mc", q:"Dos terrenos con la misma roca madre y clima. ¿Cuál tendrá un suelo más profundo y rico?",
+        options:["El Terreno A, en una llanura plana","El Terreno B, en una ladera empinada","Los dos igual","Ninguno tendrá suelo"], answer:0,
+        fb:"En lo plano el material se acumula; en la pendiente se lava (erosiona) y queda delgado."},
+      {type:"tf", q:"En una ladera empinada con mucha lluvia y viento, el suelo es más profundo y evolucionado.",
+        answer:false,
+        fb:"No. La pendiente hace que el suelo se 'lave' constantemente y quede delgado y pobre."},
+      {type:"fill", q:"El factor ______ ______ es el material original (las rocas) que se rompe para dar los minerales.",
+        answers:["roca madre"], fb:"La roca madre es el punto de partida del suelo."},
+      {type:"mc", q:"¿Por qué en las montañas altas el suelo suele ser delgado?",
+        options:["Porque la fuerte pendiente hace que se lave y erosione fácilmente","Porque no hay roca madre","Porque hace mucho calor","Porque hay demasiados organismos"], answer:0,
+        fb:"El relieve empinado favorece la erosión, así que el suelo no se acumula."}
+    ]
+  },
+  {
+    id:"m7", icon:"\u{1F9FD}", name:"El suelo como filtro vivo",
+    desc:"Relación agua-suelo · infiltración y purificación",
+    intro:"Descubre cómo el suelo limpia el agua que bebemos.",
+    questions:[
+      {type:"fill", q:"Cuando el agua de lluvia entra por los poros del suelo ocurre la ______.",
+        answers:["infiltracion"], fb:"Infiltración: el agua se introduce en el suelo."},
+      {type:"mc", q:'¿Por qué el suelo es un "filtro vivo" y no un simple colador de cocina?',
+        options:["Porque además de filtrar físicamente, tiene microbios que descomponen las toxinas","Porque tiene huecos más grandes","Porque es de metal","Porque no deja pasar nada de agua"], answer:0,
+        fb:"Un colador solo filtra por tamaño. El suelo además limpia con bacterias y hongos (filtración biológica)."},
+      {type:"match", q:"Relaciona cada tipo de filtración del suelo:",
+        pairs:[
+          {left:"Filtración física", right:"La arena y la arcilla atrapan las impurezas"},
+          {left:"Filtración biológica", right:"Las bacterias y hongos descomponen los contaminantes"}
+        ],
+        fb:"Física = por las partículas; biológica = por los microorganismos vivos."},
+      {type:"tf", q:"Pavimentar con cemento bloquea la infiltración y aumenta el riesgo de inundaciones.",
+        answer:true,
+        fb:"Correcto. El cemento es impermeable: el agua no entra, corre por encima y se inunda."},
+      {type:"fill", q:"Un suelo con vegetación y buena estructura aumenta la filtración y disminuye la ______ superficial que causa inundaciones.",
+        answers:["escorrentia"], fb:"Escorrentía: el agua que corre por la superficie. Menos infiltración = más escorrentía."},
+      {type:"classify", q:"Clasifica si cada acción AYUDA o PERJUDICA la infiltración del agua:",
+        categories:["Ayuda","Perjudica"],
+        items:[
+          {text:"Suelo con vegetación y estructura granular", cat:"Ayuda"},
+          {text:"Cubrir el suelo con cemento", cat:"Perjudica"},
+          {text:"Suelo compactado y duro como ladrillo", cat:"Perjudica"},
+          {text:"Suelo esponjoso con lombrices y raíces", cat:"Ayuda"}
+        ],
+        fb:"Un suelo vivo y suelto absorbe como esponja; el cemento y la compactación lo bloquean."}
+    ]
+  },
+  {
+    id:"mf", icon:"\u{1F30D}", name:"Misión final: Planeta agua y suelo",
+    desc:"Reto que mezcla TODOS los temas",
+    intro:"¡El reto final! Preguntas de toda la guía. ¡Demuestra lo que sabes!",
+    questions:[
+      {type:"mc", q:"¿Qué país investigaste y qué animal lo hizo famoso en tu feria?",
+        options:["Nicaragua y el tiburón toro del Lago Cocibolca","Japón y el oso panda","Brasil y el delfín rosado","Chile y el pingüino"], answer:0,
+        fb:"Nicaragua y el tiburón toro que vive en agua dulce gracias a la osmorregulación."},
+      {type:"order", q:"Ordena el ciclo del agua:",
+        items:["Evaporación","Condensación","Precipitación","Infiltración"],
+        fb:"Sube, se condensa, cae y se infiltra."},
+      {type:"match", q:"Relaciona el tramo del río con su proceso:",
+        pairs:[
+          {left:"Curso alto", right:"Erosión"},
+          {left:"Curso medio", right:"Transporte"},
+          {left:"Curso bajo", right:"Sedimentación"}
+        ],
+        fb:"Alto-erosión, medio-transporte, bajo-sedimentación."},
+      {type:"mc", q:"Los glaciares almacenan cerca del 68,7% de... ?",
+        options:["El agua dulce del planeta","El agua salada","El aire de la atmósfera","Los minerales"], answer:0,
+        fb:"Son la mayor reserva de agua dulce del mundo."},
+      {type:"mc", q:"¿Qué textura de suelo retiene MUCHÍSIMA agua y se vuelve pegajosa?",
+        options:["Arcilloso","Arenoso","Limoso","Ninguno"], answer:0,
+        fb:"El arcilloso tiene partículas ultra pequeñas y retiene mucha agua."},
+      {type:"fill", q:"De los 5 factores formadores del suelo, los ______ son las plantas, lombrices y bacterias que aportan materia orgánica.",
+        answers:["organismos"], fb:"Los organismos aportan humus y crean la estructura del suelo."},
+      {type:"tf", q:'El suelo es un "filtro vivo" porque combina filtración física y biológica.',
+        answer:true,
+        fb:"Sí: las partículas atrapan impurezas y los microbios descomponen toxinas."},
+      {type:"mc", q:"¿Por qué pavimentar mucho una ciudad provoca inundaciones?",
+        options:["El cemento bloquea la infiltración y el agua corre toda por la superficie","Porque atrae la lluvia","Porque seca los glaciares","Porque crea meandros"], answer:0,
+        fb:"Sin infiltración, toda el agua se vuelve escorrentía y se inunda."}
+    ]
+  }
+];
+
+const BADGES = {
+  m3:{icon:"\u{1F6A3}\u{200D}\u{2640}\u{FE0F}", name:"Exploradora de ríos"},
+  m4:{icon:"\u{1F4A6}", name:"Guardiana del agua"},
+  m6:{icon:"\u{1F33E}", name:"Experta en suelos"},
+  mf:{icon:"\u{1F31F}", name:"Geógrafa del planeta"}
+};
+
+const CHEERS = ["¡Excelente, Mía! \u{1F389}","¡Muy bien! \u{1F4AA}","¡Perfecto! \u{2B50}","¡Genial! \u{1F64C}","¡Eres una crack! \u{1F680}","¡Correctísimo! \u{2728}"];
+const ENCOURAGE = ["¡Casi! Lee la explicación y sigue \u{1F499}","No pasa nada, así se aprende \u{1F31F}","¡Tú puedes! Repasa esto \u{1F4AA}","Tranquila, lo vas a lograr \u{1F642}"];
+
+/* ===================== ESTADO ===================== */
+let state = {};
+function resetState(){
+  state = {
+    started:false, modIndex:null, qIndex:0,
+    lives:3, score:0, answered:0, correct:0,
+    perMod:{}, badges:{}, answeredThisQ:false
+  };
+  MODULES.forEach(m=>{ state.perMod[m.id]={correct:0,total:0,done:false}; });
+}
+resetState();
+
+/* ===================== UTILES ===================== */
+const $ = id => document.getElementById(id);
+function norm(s){ return (s||"").toString().trim().toLowerCase()
+  .normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," "); }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
+function totalQuestions(){ return MODULES.reduce((s,m)=>s+m.questions.length,0); }
+
+/* ===================== PANTALLAS ===================== */
+function render(html){ $("app").innerHTML = html; }
+
+function screenStart(){
+  render(`
+  <div class="card center">
+    <div style="font-size:3rem">\u{1F30D}\u{1F4A7}\u{1F331}</div>
+    <h1>Misión Geografía</h1>
+    <p class="sub">Repaso final · Geografía General · 1er Año · 3er Lapso</p>
+    <div class="tag" style="margin-top:14px">Para: Mía Sabrina</div>
+    <p class="mt">Juega por módulos, gana puntos e insignias y prepárate para tu evaluación.
+    Cada vez que respondas verás una explicación para aprender mejor. \u{1F4AA}</p>
+    <div class="modgrid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+      <div class="modcard"><div class="mi">\u{1F4A7}</div><div class="mt-t">Agua</div><div class="md">Ciclo, ríos y glaciares</div></div>
+      <div class="modcard"><div class="mi">\u{1F331}</div><div class="mt-t">Suelo</div><div class="md">Textura, factores y filtro vivo</div></div>
+      <div class="modcard"><div class="mi">\u{1F988}</div><div class="mt-t">Nicaragua</div><div class="md">Tu Feria Geográfica</div></div>
+    </div>
+    <div class="mt2"><button class="btn gold" onclick="goMap()">▶ ¡Empezar a jugar!</button></div>
+  </div>`);
+}
+
+function goMap(){ state.started=true; screenMap(); }
+
+function screenMap(){
+  const done = Object.values(state.perMod).filter(p=>p.done).length;
+  const cards = MODULES.map((m,i)=>{
+    const pm = state.perMod[m.id];
+    const doneCls = pm.done? "done":"";
+    const mini = pm.done? `<div class="score-mini">${pm.correct}/${pm.total} aciertos</div>`:"";
+    const check = pm.done? `<div class="check">✅</div>`:"";
+    return `<div class="modcard ${doneCls}" onclick="startModule(${i})">
+      ${check}<div class="mi">${m.icon}</div>
+      <div class="mt-t">${m.name}</div>
+      <div class="md">${m.desc}</div>${mini}
+    </div>`;
+  }).join("");
+  const badgeHtml = Object.keys(BADGES).map(k=>{
+    const earned = state.badges[k]? "earned":"";
+    return `<div class="badge ${earned}"><div class="be">${BADGES[k].icon}</div><div class="bn">${BADGES[k].name}</div></div>`;
+  }).join("");
+  const allDone = done===MODULES.length;
+  render(`
+  ${topbar()}
+  <div class="card">
+    <h2>\u{1F5FA}\u{FE0F} Mapa de módulos</h2>
+    <p class="sub">Elige un módulo. Has completado ${done} de ${MODULES.length}.</p>
+    <div class="modgrid">${cards}</div>
+    <h2 class="mt2">\u{1F3C5} Insignias</h2>
+    <div class="badges">${badgeHtml}</div>
+    ${allDone? `<div class="mt2 center"><button class="btn green" onclick="screenFinal()">\u{1F393} Ver mi resultado final</button></div>`:""}
+  </div>`);
+}
+
+function topbar(){
+  const pct = Math.round((state.answered/totalQuestions())*100);
+  const hearts = "❤️".repeat(state.lives) + "\u{1F90D}".repeat(Math.max(0,3-state.lives));
+  return `<div class="topbar">
+    <div class="chip">⭐ <span>${state.score} pts</span></div>
+    <div class="chip hearts">${hearts}</div>
+    <div class="chip">\u{1F4CA} <span>${state.answered}/${totalQuestions()}</span></div>
+  </div>
+  <div class="card" style="padding:10px 16px; margin-bottom:14px;">
+    <div style="display:flex; justify-content:space-between; font-size:.85rem; color:var(--gris); font-weight:600;">
+      <span>Progreso total</span><span>${pct}%</span></div>
+    <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function startModule(i){ state.modIndex=i; state.qIndex=0; const m=MODULES[i];
+  render(`
+  ${topbar()}
+  <div class="card center">
+    <div style="font-size:3rem">${m.icon}</div>
+    <h2>${m.name}</h2>
+    <p class="mt">${m.intro}</p>
+    <p class="sub mt">${m.questions.length} preguntas en este módulo.</p>
+    <div class="mt2">
+      <button class="btn" onclick="renderQuestion()">Comenzar módulo ▶</button>
+      <div class="mt"><button class="btn ghost" onclick="screenMap()">← Volver al mapa</button></div>
+    </div>
+  </div>`);
+}
+
+/* ===================== PREGUNTAS ===================== */
+function renderQuestion(){
+  state.answeredThisQ=false;
+  const m=MODULES[state.modIndex];
+  const q=m.questions[state.qIndex];
+  let bodyHtml="";
+  if(q.type==="mc") bodyHtml=renderMC(q);
+  else if(q.type==="tf") bodyHtml=renderTF(q);
+  else if(q.type==="fill") bodyHtml=renderFill(q);
+  else if(q.type==="match") bodyHtml=renderMatch(q);
+  else if(q.type==="order") bodyHtml=renderOrder(q);
+  else if(q.type==="classify") bodyHtml=renderClassify(q);
+
+  const tipoLabel={mc:"Selecciona la opción correcta",tf:"¿Verdadero o falso?",fill:"Completa el espacio",match:"Relaciona las columnas",order:"Ordena los elementos",classify:"Clasifica cada elemento"}[q.type];
+
+  render(`
+  ${topbar()}
+  <div class="card">
+    <div class="tag">${m.icon} ${m.name} · ${state.qIndex+1}/${m.questions.length}</div>
+    <div class="hint" style="margin-bottom:6px">${tipoLabel}</div>
+    <h2>${q.q}</h2>
+    <div id="qbody">${bodyHtml}</div>
+    <div class="feedback" id="fb"></div>
+    <div id="nextwrap"></div>
+  </div>`);
+  if(q.type==="order") initOrder(q);
+}
+
+function renderMC(q){
+  const keys=["A","B","C","D","E"];
+  return `<div class="options">`+q.options.map((o,i)=>
+    `<button class="opt" id="opt${i}" onclick="answerMC(${i})"><span class="key">${keys[i]}</span><span>${o}</span></button>`
+  ).join("")+`</div>`;
+}
+function answerMC(i){
+  if(state.answeredThisQ) return;
+  const q=MODULES[state.modIndex].questions[state.qIndex];
+  document.querySelectorAll(".opt").forEach(el=>el.classList.add("disabled"));
+  const ok = i===q.answer;
+  $("opt"+q.answer).classList.add("correct");
+  if(!ok) $("opt"+i).classList.add("wrong");
+  finishAnswer(ok,q.fb);
+}
+
+function renderTF(q){
+  return `<div class="tf-row">
+    <button class="opt" id="optT" onclick="answerTF(true)">✔ Verdadero</button>
+    <button class="opt" id="optF" onclick="answerTF(false)">✖ Falso</button>
+  </div>`;
+}
+function answerTF(val){
+  if(state.answeredThisQ) return;
+  const q=MODULES[state.modIndex].questions[state.qIndex];
+  $("optT").classList.add("disabled"); $("optF").classList.add("disabled");
+  const ok = val===q.answer;
+  (q.answer? $("optT"):$("optF")).classList.add("correct");
+  if(!ok) (val? $("optT"):$("optF")).classList.add("wrong");
+  finishAnswer(ok,q.fb);
+}
+
+function renderFill(q){
+  return `<input type="text" id="fillin" placeholder="Escribe tu respuesta aquí..." autocomplete="off"
+    onkeydown="if(event.key==='Enter')answerFill()">
+    <div class="mt"><button class="btn" id="fillbtn" onclick="answerFill()">Comprobar</button></div>`;
+}
+function answerFill(){
+  if(state.answeredThisQ) return;
+  const q=MODULES[state.modIndex].questions[state.qIndex];
+  const val=norm($("fillin").value);
+  if(!val){ toast("✏️ Escribe una respuesta"); return; }
+  const ok=q.answers.some(a=>norm(a)===val || val.includes(norm(a)));
+  $("fillin").disabled=true; $("fillbtn").disabled=true;
+  $("fillin").style.borderColor = ok? "var(--ok)":"var(--rojo)";
+  const extra = ok? "" : `<br><span style="font-size:.95rem">Respuesta correcta: <b>${q.answers[0]}</b></span>`;
+  finishAnswer(ok,q.fb+extra);
+}
+
+function renderMatch(q){
+  const opts = shuffle(q.pairs.map(p=>p.right));
+  return q.pairs.map((p,i)=>
+    `<div class="match-row">
+      <div class="match-left">${p.left}</div>
+      <div class="match-pick">
+        <select id="m${i}">
+          <option value="">— elige —</option>
+          ${opts.map(o=>`<option value="${encodeURIComponent(o)}">${o}</option>`).join("")}
+        </select>
+      </div>
+    </div>`
+  ).join("")+`<div class="mt"><button class="btn" id="matchbtn" onclick="answerMatch()">Comprobar</button></div>`;
+}
+function answerMatch(){
+  if(state.answeredThisQ) return;
+  const q=MODULES[state.modIndex].questions[state.qIndex];
+  let allFilled=true, allOk=true;
+  q.pairs.forEach((p,i)=>{
+    const v=decodeURIComponent($("m"+i).value||"");
+    if(!v) allFilled=false;
+    if(v!==p.right) allOk=false;
+  });
+  if(!allFilled){ toast("\u{1F517} Completa todas las parejas"); return; }
+  q.pairs.forEach((p,i)=>{
+    const sel=$("m"+i); const v=decodeURIComponent(sel.value||"");
+    sel.disabled=true;
+    sel.style.borderColor = (v===p.right)? "var(--ok)":"var(--rojo)";
+  });
+  $("matchbtn").disabled=true;
+  let extra="";
+  if(!allOk){ extra="<br><span style='font-size:.95rem'>Lo correcto era: "+q.pairs.map(p=>`<b>${p.left}</b> → ${p.right}`).join("; ")+"</span>"; }
+  finishAnswer(allOk,q.fb+extra);
+}
+
+function renderClassify(q){
+  return q.items.map((it,i)=>
+    `<div class="classify-item">
+      <div class="lab">${it.text}</div>
+      <div class="match-pick">
+        <select id="c${i}">
+          <option value="">— elige —</option>
+          ${q.categories.map(c=>`<option value="${encodeURIComponent(c)}">${c}</option>`).join("")}
+        </select>
+      </div>
+    </div>`
+  ).join("")+`<div class="mt"><button class="btn" id="classbtn" onclick="answerClassify()">Comprobar</button></div>`;
+}
+function answerClassify(){
+  if(state.answeredThisQ) return;
+  const q=MODULES[state.modIndex].questions[state.qIndex];
+  let allFilled=true, allOk=true;
+  q.items.forEach((it,i)=>{
+    const v=decodeURIComponent($("c"+i).value||"");
+    if(!v) allFilled=false;
+    if(v!==it.cat) allOk=false;
+  });
+  if(!allFilled){ toast("\u{1F5C2}️ Clasifica todos los elementos"); return; }
+  q.items.forEach((it,i)=>{
+    const sel=$("c"+i); const v=decodeURIComponent(sel.value||"");
+    sel.disabled=true; sel.style.borderColor=(v===it.cat)?"var(--ok)":"var(--rojo)";
+  });
+  $("classbtn").disabled=true;
+  let extra="";
+  if(!allOk){ extra="<br><span style='font-size:.95rem'>Correcto: "+q.items.map(it=>`<b>${it.text.split(",")[0]}</b> → ${it.cat}`).join("; ")+"</span>"; }
+  finishAnswer(allOk,q.fb+extra);
+}
+
+/* Ordenar */
+let orderSeq=[];
+function renderOrder(q){
+  return `<div class="hint">Toca los elementos en el orden correcto. Toca un elemento de arriba para devolverlo.</div>
+    <div class="order-seq" id="seq"></div>
+    <div class="order-pool" id="pool"></div>
+    <div class="mt"><button class="btn ghost" onclick="resetOrder()">↺ Reiniciar</button>
+    <button class="btn" id="orderbtn" onclick="answerOrder()">Comprobar</button></div>`;
+}
+function initOrder(q){ orderSeq=[]; window._orderPool=shuffle(q.items); drawOrder(); }
+function drawOrder(){
+  const pool=window._orderPool.filter(x=>!orderSeq.includes(x));
+  $("seq").innerHTML = orderSeq.map((x,i)=>`<div class="chip" onclick="removeOrder('${encodeURIComponent(x)}')"><span class="num">${i+1}</span>${x}</div>`).join("") || `<span class="hint" style="align-self:center">Tu orden aparecerá aquí...</span>`;
+  $("pool").innerHTML = pool.map(x=>`<div class="chip" onclick="addOrder('${encodeURIComponent(x)}')">${x}</div>`).join("") || `<span class="hint" style="align-self:center">¡Todo colocado!</span>`;
+}
+function addOrder(x){ if(state.answeredThisQ)return; orderSeq.push(decodeURIComponent(x)); drawOrder(); }
+function removeOrder(x){ if(state.answeredThisQ)return; orderSeq=orderSeq.filter(y=>y!==decodeURIComponent(x)); drawOrder(); }
+function resetOrder(){ if(state.answeredThisQ)return; orderSeq=[]; drawOrder(); }
+function answerOrder(){
+  if(state.answeredThisQ) return;
+  const q=MODULES[state.modIndex].questions[state.qIndex];
+  if(orderSeq.length!==q.items.length){ toast("\u{1F522} Coloca todos los elementos"); return; }
+  const ok = orderSeq.every((x,i)=>x===q.items[i]);
+  $("orderbtn").disabled=true;
+  let extra="";
+  if(!ok){ extra="<br><span style='font-size:.95rem'>Orden correcto: "+q.items.map((x,i)=>`${i+1}. ${x}`).join(" → ")+"</span>"; }
+  finishAnswer(ok,q.fb+extra);
+}
+
+/* ===================== FEEDBACK Y AVANCE ===================== */
+function finishAnswer(ok,fb){
+  state.answeredThisQ=true;
+  state.answered++;
+  const m=MODULES[state.modIndex];
+  state.perMod[m.id].total++;
+  if(ok){
+    state.correct++; state.perMod[m.id].correct++;
+    state.score+=10;
+    showFeedback(true, CHEERS[Math.floor(Math.random()*CHEERS.length)], fb);
+  } else {
+    state.lives--;
+    showFeedback(false, ENCOURAGE[Math.floor(Math.random()*ENCOURAGE.length)], fb);
+    if(state.lives<=0){
+      state.lives=3;
+      setTimeout(()=>toast("\u{1F49A} ¡Vidas recargadas! Sigue practicando"),300);
+    }
+  }
+  const fbEl=$("fb");
+  if(fbEl && fbEl.scrollIntoView) fbEl.scrollIntoView({behavior:"smooth",block:"nearest"});
+  const last = state.qIndex>=m.questions.length-1;
+  $("nextwrap").innerHTML = `<div class="mt center">
+    <button class="btn ${last?'green':''}" onclick="nextQuestion()">${last?"Terminar módulo ✓":"Siguiente pregunta ▶"}</button></div>`;
+}
+function showFeedback(good,title,body){
+  const el=$("fb");
+  el.className="feedback show "+(good?"good":"bad");
+  el.innerHTML=`<b>${good?"✅ "+title:"❌ "+title}</b>${body}`;
+}
+function nextQuestion(){
+  const m=MODULES[state.modIndex];
+  if(state.qIndex<m.questions.length-1){ state.qIndex++; renderQuestion(); }
+  else { finishModule(); }
+}
+
+function finishModule(){
+  const m=MODULES[state.modIndex];
+  const pm=state.perMod[m.id];
+  pm.done=true;
+  let newBadge=null;
+  if(BADGES[m.id] && !state.badges[m.id]){ state.badges[m.id]=true; newBadge=BADGES[m.id]; }
+  const pct=Math.round((pm.correct/pm.total)*100);
+  let msg = pct>=80? "¡Dominaste este módulo! \u{1F31F}" : pct>=50? "¡Buen trabajo! Repasa lo que falló \u{1F4AA}" : "Sigue practicando este tema \u{1F499}";
+  const badgeBox = newBadge? `<div class="papa" style="background:linear-gradient(160deg,#E0A93B,#caa01e); color:#3a2a00;">
+     \u{1F389} ¡Nueva insignia desbloqueada!<br><span style="font-size:2rem">${newBadge.icon}</span><br><b>${newBadge.name}</b></div>`:"";
+  render(`
+  ${topbar()}
+  <div class="card center">
+    <div style="font-size:3rem">${m.icon}</div>
+    <h2>Módulo completado</h2>
+    <p class="sub">${m.name}</p>
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stat"><div class="num">${pm.correct}/${pm.total}</div><div class="lab">Aciertos</div></div>
+      <div class="stat"><div class="num">${pct}%</div><div class="lab">Acierto</div></div>
+      <div class="stat"><div class="num">${state.score}</div><div class="lab">Puntos</div></div>
+    </div>
+    <p class="mt"><b>${msg}</b></p>
+    ${badgeBox}
+    <div class="mt2"><button class="btn" onclick="screenMap()">\u{1F5FA}️ Volver al mapa</button></div>
+  </div>`);
+}
+
+/* ===================== RESULTADO FINAL ===================== */
+function screenFinal(){
+  const total=state.answered, correct=state.correct;
+  const pct = total? Math.round((correct/total)*100):0;
+  const dominados=[], reforzar=[];
+  MODULES.forEach(m=>{
+    const pm=state.perMod[m.id];
+    if(pm.total===0) return;
+    const p=pm.correct/pm.total;
+    if(p>=0.7) dominados.push(m.name); else reforzar.push(m.name);
+  });
+  let recomendacion;
+  if(pct>=85) recomendacion="¡Estás muy bien preparada, Mía! Da un último repaso a los temas marcados y vas lista para tu evaluación. \u{1F680}";
+  else if(pct>=60) recomendacion="¡Vas por buen camino! Dedica un rato extra a los 'temas a reforzar' y vuelve a jugar esos módulos. \u{1F4AA}";
+  else recomendacion="¡No te desanimes! Repasa con papá la guía resuelta y vuelve a jugar los módulos a reforzar. Con práctica lo vas a dominar. \u{1F499}";
+
+  const badgeCount=Object.keys(state.badges).length;
+  const badgeHtml = Object.keys(BADGES).map(k=>{
+    const earned = state.badges[k]? "earned":"";
+    return `<div class="badge ${earned}"><div class="be">${BADGES[k].icon}</div><div class="bn">${BADGES[k].name}</div></div>`;
+  }).join("");
+
+  let medal = pct>=85? "\u{1F947}" : pct>=60? "\u{1F948}" : "\u{1F949}";
+
+  render(`
+  <div class="card center">
+    <div style="font-size:3.4rem">${medal}</div>
+    <h1>¡Misión completada!</h1>
+    <p class="sub">Resultado de Mía Sabrina · Geografía General</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="num">${state.score}</div><div class="lab">Puntuación total</div></div>
+      <div class="stat"><div class="num">${pct}%</div><div class="lab">Aciertos</div></div>
+      <div class="stat"><div class="num">${correct}/${total}</div><div class="lab">Preguntas</div></div>
+      <div class="stat"><div class="num">${badgeCount}/4</div><div class="lab">Insignias</div></div>
+    </div>
+
+    <div class="badges">${badgeHtml}</div>
+
+    <div class="listbox dom" style="text-align:left">
+      <b>✅ Temas dominados</b>
+      ${dominados.length? "<ul>"+dominados.map(t=>`<li>${t}</li>`).join("")+"</ul>" : "<p>Sigue jugando para dominar más temas.</p>"}
+    </div>
+    <div class="listbox ref" style="text-align:left">
+      <b>\u{1F4CC} Temas a reforzar</b>
+      ${reforzar.length? "<ul>"+reforzar.map(t=>`<li>${t}</li>`).join("")+"</ul>" : "<p>¡Ninguno! Dominaste todos los temas. \u{1F389}</p>"}
+    </div>
+
+    <div class="listbox" style="background:#eef3f7; text-align:left">
+      <b>\u{1F4D6} Recomendación final de estudio</b>
+      <p style="margin-top:6px">${recomendacion}</p>
+    </div>
+
+    <div class="papa">\u{1F468}‍\u{1F467} ¡Muéstrale esta pantalla a papá para revisar juntos el resultado!</div>
+
+    <div class="mt2">
+      <button class="btn gold" onclick="restart()">\u{1F504} Jugar de nuevo</button>
+      <div class="mt"><button class="btn ghost" onclick="screenMap()">\u{1F5FA}️ Volver al mapa</button></div>
+    </div>
+  </div>`);
+}
+
+function restart(){ resetState(); screenStart(); }
+
+/* ===================== INICIO ===================== */
+screenStart();
+</script>
+</body>
+</html>

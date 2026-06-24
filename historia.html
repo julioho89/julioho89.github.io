@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reto de Historia de Venezuela — Mía Sabrina</title>
+<style>
+  :root{
+    --azul:#1f4e79; --azul2:#2e6fb0; --azul-cl:#d6e4f0;
+    --amar:#f4b740; --amar-cl:#fce9c8; --verde:#3fa66a; --verde-cl:#e2efda;
+    --rojo:#c0392b; --rojo-cl:#fbe2de; --gris:#f2f4f7; --txt:#22303f;
+    --sombra:0 6px 20px rgba(31,78,121,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:var(--txt);
+    background:linear-gradient(135deg,#eaf2fb 0%,#f7f1e3 100%);min-height:100vh;
+    padding:14px;line-height:1.5;
+  }
+  .app{max-width:760px;margin:0 auto}
+  .card{background:#fff;border-radius:18px;box-shadow:var(--sombra);padding:22px;margin-bottom:16px}
+
+  /* Cabecera fija de juego */
+  .hud{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;
+       background:var(--azul);color:#fff;border-radius:14px;padding:12px 16px;margin-bottom:14px;box-shadow:var(--sombra)}
+  .hud .stat{font-size:.92rem;font-weight:600;display:flex;align-items:center;gap:5px}
+  .hud .lives{letter-spacing:2px}
+  .progress{height:12px;background:rgba(255,255,255,.3);border-radius:8px;overflow:hidden;flex:1 1 100%;margin-top:6px}
+  .progress > span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--amar),#ffe08a);transition:width .4s}
+
+  h1{color:var(--azul);font-size:1.7rem;margin-bottom:6px;text-align:center}
+  h2{color:var(--azul);font-size:1.25rem;margin-bottom:10px}
+  .sub{text-align:center;color:#5a6b7b;margin-bottom:14px}
+  .badge-flag{display:inline-block;background:linear-gradient(180deg,#ffd24a 33%,#1f4e79 33% 66%,#c0392b 66%);width:46px;height:30px;border-radius:5px;vertical-align:middle;margin:0 4px;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+
+  .btn{cursor:pointer;border:none;border-radius:12px;padding:13px 18px;font-size:1rem;font-weight:700;
+       transition:transform .08s,box-shadow .2s;font-family:inherit}
+  .btn:active{transform:scale(.97)}
+  .btn-main{background:var(--amar);color:#3a2e00;box-shadow:0 4px 0 #c9921f;width:100%}
+  .btn-main:hover{background:#ffc955}
+  .btn-azul{background:var(--azul2);color:#fff;box-shadow:0 4px 0 #1c5288}
+  .btn-ghost{background:var(--gris);color:var(--azul)}
+
+  /* Mapa de módulos */
+  .modgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.modgrid{grid-template-columns:1fr}}
+  .modcard{border:2px solid var(--azul-cl);border-radius:14px;padding:14px;cursor:pointer;background:#fff;
+           transition:transform .1s,border-color .2s;position:relative}
+  .modcard:hover{transform:translateY(-3px);border-color:var(--amar)}
+  .modcard .ico{font-size:1.9rem}
+  .modcard h3{color:var(--azul);font-size:1.02rem;margin:6px 0 3px}
+  .modcard p{font-size:.82rem;color:#667}
+  .modcard .done{position:absolute;top:8px;right:10px;font-size:1.1rem}
+  .modcard.locked{opacity:.55;filter:grayscale(.4)}
+  .pill{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--verde-cl);color:var(--verde);margin-top:6px}
+
+  /* Preguntas */
+  .qmeta{font-size:.8rem;color:#7a8896;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+  .qtext{font-size:1.12rem;font-weight:700;margin-bottom:16px;color:var(--azul)}
+  .opt{display:block;width:100%;text-align:left;background:var(--gris);border:2px solid transparent;border-radius:12px;
+       padding:13px 15px;margin-bottom:10px;cursor:pointer;font-size:1rem;font-family:inherit;transition:.15s}
+  .opt:hover{border-color:var(--azul2);background:#eef4fb}
+  .opt.sel{border-color:var(--azul2);background:#e3eefb}
+  .opt.correct{background:var(--verde-cl);border-color:var(--verde);color:#1d5b35;font-weight:700}
+  .opt.wrong{background:var(--rojo-cl);border-color:var(--rojo);color:#7d241a}
+  .opt.dim{opacity:.6}
+  .opt:disabled{cursor:default}
+
+  /* match / order / classify */
+  .cols{display:flex;gap:12px}
+  .col{flex:1;display:flex;flex-direction:column;gap:9px}
+  .chip{background:var(--gris);border:2px solid transparent;border-radius:11px;padding:11px;cursor:pointer;
+        font-size:.95rem;text-align:center;transition:.15s;font-family:inherit}
+  .chip:hover{border-color:var(--azul2)}
+  .chip.sel{border-color:var(--amar);background:var(--amar-cl)}
+  .chip.matched{background:var(--azul-cl);border-color:var(--azul2);cursor:default}
+  .chip.correct{background:var(--verde-cl);border-color:var(--verde)}
+  .chip.wrong{background:var(--rojo-cl);border-color:var(--rojo)}
+  .chip .tag{display:block;font-size:.72rem;color:var(--azul);font-weight:700;margin-top:3px}
+  .seqbox{min-height:44px;background:#fff;border:2px dashed var(--azul-cl);border-radius:11px;padding:8px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px}
+  .seqitem{background:var(--azul);color:#fff;border-radius:8px;padding:6px 10px;font-size:.85rem;font-weight:600}
+  .catwrap{display:flex;gap:10px;margin-top:12px}
+  .catbox{flex:1;border:2px solid var(--azul-cl);border-radius:12px;padding:10px;min-height:70px}
+  .catbox h4{font-size:.85rem;color:var(--azul);text-align:center;margin-bottom:8px}
+  .catbox .chip{margin-bottom:7px}
+
+  /* feedback */
+  .fb{border-radius:12px;padding:13px 15px;margin-top:6px;font-size:.95rem;display:none}
+  .fb.ok{background:var(--verde-cl);border-left:5px solid var(--verde)}
+  .fb.no{background:var(--rojo-cl);border-left:5px solid var(--rojo)}
+  .fb b{display:block;margin-bottom:4px}
+
+  .actions{display:flex;gap:10px;margin-top:14px}
+  .actions .btn{flex:1}
+
+  /* toast insignia */
+  .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120px);
+         background:var(--azul);color:#fff;padding:14px 22px;border-radius:14px;box-shadow:var(--sombra);
+         font-weight:700;z-index:50;transition:transform .4s;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  /* insignias */
+  .badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}
+  .ins{width:96px;text-align:center;opacity:.4;filter:grayscale(1)}
+  .ins.on{opacity:1;filter:none}
+  .ins .medal{font-size:2rem}
+  .ins small{display:block;font-size:.72rem;font-weight:700;color:var(--azul)}
+
+  /* final */
+  .bigscore{font-size:3rem;font-weight:800;color:var(--azul);text-align:center}
+  .ring{text-align:center;margin:10px 0}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .statbox{background:var(--gris);border-radius:12px;padding:12px;text-align:center}
+  .statbox .n{font-size:1.5rem;font-weight:800;color:var(--azul)}
+  .statbox .l{font-size:.78rem;color:#667}
+  .lista{background:var(--gris);border-radius:12px;padding:12px 16px;margin:8px 0}
+  .lista h4{color:var(--azul);margin-bottom:6px;font-size:.95rem}
+  .lista li{margin-left:18px;font-size:.92rem;margin-bottom:3px}
+  .dadmsg{background:var(--amar-cl);border:2px dashed var(--amar);border-radius:14px;padding:16px;text-align:center;font-weight:700;color:#6b5200;margin-top:14px}
+  .hide{display:none}
+  .center{text-align:center}
+  .note{font-size:.82rem;color:#8492a0;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <!-- HUD -->
+  <div id="hud" class="hud hide">
+    <span class="stat">⭐ <span id="hudScore">0</span> pts</span>
+    <span class="stat lives" id="hudLives">❤️❤️❤️</span>
+    <span class="stat">🏅 <span id="hudBadges">0</span>/4</span>
+    <span class="stat" id="hudMod"></span>
+    <div class="progress"><span id="hudBar"></span></div>
+  </div>
+
+  <!-- PANTALLA INICIO -->
+  <div id="screen-home" class="card">
+    <h1>Reto de Historia de Venezuela <span class="badge-flag"></span></h1>
+    <p class="sub">Petróleo, Guzmancismo y los Diez Años de Transición (1888–1899)<br><b>Para Mía Sabrina · Tercer Lapso</b></p>
+    <p style="margin-bottom:14px">¡Hola, Mía! Vas a repasar Historia jugando. Tienes <b>6 misiones</b> y un <b>Reto del Historiador</b> final. Ganas puntos por cada acierto, tienes <b>vidas</b> y puedes conseguir <b>4 insignias</b>. Si te equivocas, no pasa nada: el juego te explica la respuesta correcta para que la recuerdes. 💪</p>
+    <div class="badges">
+      <div class="ins"><div class="medal">📜</div><small>Cronista</small></div>
+      <div class="ins"><div class="medal">🔍</div><small>Analista de fuentes</small></div>
+      <div class="ins"><div class="medal">⚖️</div><small>Experta en constituciones</small></div>
+      <div class="ins"><div class="medal">🎓</div><small>Historiadora del s. XIX</small></div>
+    </div>
+    <button class="btn btn-main" onclick="goMap()">▶ ¡Empezar a jugar!</button>
+    <p class="note">Funciona sin internet. Puedes jugar en computadora, tablet o celular.</p>
+  </div>
+
+  <!-- MAPA DE MÓDULOS -->
+  <div id="screen-map" class="card hide">
+    <h2>Elige tu misión 🗺️</h2>
+    <p class="sub">Completa los módulos para ganar insignias. ¡Puedes repetir los que quieras!</p>
+    <div id="modgrid" class="modgrid"></div>
+    <div style="margin-top:16px">
+      <button id="finalBtn" class="btn btn-azul hide" style="width:100%" onclick="startModule(6)">🏆 Reto del Historiador (final)</button>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="showFinalScreen()">📊 Ver mi resultado</button>
+  </div>
+
+  <!-- PANTALLA PREGUNTA -->
+  <div id="screen-quiz" class="card hide">
+    <div class="qmeta" id="qmeta"></div>
+    <div class="qtext" id="qtext"></div>
+    <div id="qbody"></div>
+    <div id="fb" class="fb"></div>
+    <div class="actions">
+      <button id="checkBtn" class="btn btn-azul hide" onclick="checkAnswer()">Comprobar</button>
+      <button id="nextBtn" class="btn btn-main hide" onclick="nextQuestion()">Siguiente ➜</button>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="goMap()">↩ Volver al mapa</button>
+  </div>
+
+  <!-- PANTALLA FINAL -->
+  <div id="screen-final" class="card hide"></div>
+
+</div>
+
+<script>
+/* ===================== DATOS ===================== */
+const MODULES = [
+  { id:0, ico:"⏳", name:"Línea del tiempo", desc:"Ordena eventos y ubica a los presidentes.", badge:"Cronista", badgeIco:"📜",
+    questions:[
+      {type:"order", q:"Ordena estos hechos del más ANTIGUO al más reciente:",
+        items:["Inicio del Septenio de Guzmán Blanco (1870)","La Petrolia del Táchira (1878)","Pozo Zumaque I (1914)","Reventón del Barroso II (1922)"],
+        fb:"El Septenio empezó en 1870, La Petrolia se fundó en 1878, el Zumaque I brotó en 1914 y el Barroso II reventó en 1922. Tip: 18__ va antes que 19__."},
+      {type:"match", q:"Relaciona cada presidente con su período de gobierno:",
+        pairs:[["Juan Pablo Rojas Paúl","1888–1890"],["Raimundo Andueza Palacio","1890–1892"],["Joaquín Crespo","1892–1898"],["Ignacio Andrade","1898–1899"]],
+        fb:"Recuerda la cadena: Rojas Paúl → Andueza Palacio → Crespo → Andrade. Andrade es el último, justo antes de Cipriano Castro (1899)."},
+      {type:"mc", q:"¿Cuál de estos eventos ocurrió PRIMERO?",
+        options:["La llegada de Cipriano Castro al poder (1899)","El Septenio de Guzmán Blanco (1870)","La Revolución Legalista de Crespo (1892)"], answer:1,
+        fb:"El Septenio comenzó en 1870, mucho antes que la Revolución Legalista (1892) y la llegada de Castro (1899)."},
+      {type:"tf", q:"La Revolución Legalista de Crespo (1892) ocurrió ANTES que la Revolución Restauradora de Castro (1899).",
+        answer:true, fb:"Correcto: 1892 es antes que 1899. La Legalista derrocó a Andueza; la Restauradora derrocó a Andrade."},
+      {type:"order", q:"Ordena esta cadena política de la transición:",
+        items:["Andueza Palacio intenta extender su mandato (continuismo)","Crespo lo derroca con la Revolución Legalista","Crespo impone a Andrade con fraude","Castro derroca a Andrade (1899)"],
+        fb:"Una cosa llevó a la otra: el continuismo de Andueza provocó la Revolución Legalista; luego Crespo impuso a Andrade, y al final Castro derrocó a Andrade."}
+    ]},
+  { id:1, ico:"🛢️", name:"Petróleo y contexto", desc:"La importancia del petróleo en Venezuela.", badge:null,
+    questions:[
+      {type:"mc", q:"¿Cómo llamaban los indígenas al petróleo que brotaba naturalmente del suelo?",
+        options:["Mene","Mene Grande","Crudo"], answer:0,
+        fb:"Lo llamaban “mene”. Lo usaban como impermeabilizante, medicina y para calafatear embarcaciones."},
+      {type:"mc", q:"¿Cuál fue la primera empresa petrolera venezolana, fundada en 1878?",
+        options:["PDVSA","La Petrolia del Táchira","Creole Petroleum"], answer:1,
+        fb:"La Petrolia del Táchira (1878) fue la primera empresa petrolera del país. PDVSA es muy posterior (1976)."},
+      {type:"mc", q:"En 1914, ¿qué pozo demostró que había petróleo en grandes cantidades?",
+        options:["Barroso II","Zumaque I (Mene Grande)","La Rosa"], answer:1,
+        fb:"El Zumaque I, en Mene Grande (Zulia), abrió la era petrolera moderna en 1914."},
+      {type:"mc", q:"El reventón de 1922 que puso a Venezuela en el mapa petrolero mundial fue el pozo…",
+        options:["Barroso II (Cabimas)","Zumaque I","La Petrolia"], answer:0,
+        fb:"El Barroso II reventó en Cabimas en 1922 con un chorro enorme; mostró al mundo la riqueza petrolera venezolana."},
+      {type:"mc", q:"Antes del petróleo, ¿en qué se basaba principalmente la economía venezolana?",
+        options:["En la industria","En la agricultura: café y cacao","En el turismo"], answer:1,
+        fb:"Venezuela era un país agrícola que vivía del café y el cacao. El petróleo cambió todo en el siglo XX."},
+      {type:"tf", q:"El petróleo convirtió a Venezuela en una economía dependiente de un solo producto.",
+        answer:true, fb:"Verdadero: al depender tanto del petróleo, cuando su precio sube hay bonanza y cuando baja hay crisis."},
+      {type:"mc", q:"La idea de invertir la riqueza petrolera en un desarrollo duradero se resume en la frase…",
+        options:["“Sembrar el petróleo”","“Vivir del petróleo”","“Exportar el petróleo”"], answer:0,
+        fb:"“Sembrar el petróleo” significa usar el dinero del petróleo para crear desarrollo que dure (escuelas, industrias, agricultura)."}
+    ]},
+  { id:2, ico:"🏛️", name:"Guzmancismo", desc:"Obras y estilo de gobierno de Guzmán Blanco.", badge:null,
+    questions:[
+      {type:"mc", q:"¿Cuál era el apodo de Antonio Guzmán Blanco?",
+        options:["El Mocho","El Ilustre Americano","El Cabito"], answer:1,
+        fb:"Lo llamaban “el Ilustre Americano”. (“El Mocho” era Hernández y “El Cabito”, Cipriano Castro.)"},
+      {type:"multi", q:"Selecciona TODAS las obras que realizó Guzmán Blanco:",
+        options:["Instrucción pública gratuita y obligatoria","Panteón Nacional","Capitolio Federal","Nacionalización del petróleo","Palacio de Miraflores"],
+        answers:[0,1,2], fb:"Sí fueron suyas: la instrucción pública gratuita (1870), el Panteón Nacional y el Capitolio. La nacionalización del petróleo (1976) y Miraflores no fueron obra suya."},
+      {type:"classify", q:"Clasifica cada rasgo del gobierno de Guzmán Blanco:",
+        cats:["Modernización / progreso","Personalismo / poder"],
+        items:[{t:"Instrucción pública gratuita y obligatoria",cat:0},{t:"Ferrocarril Caracas–La Guaira",cat:0},{t:"Imponía su voluntad sobre los ministros",cat:1},{t:"Reduce los estados de 20 a 9 (centralización)",cat:1}],
+        fb:"Modernización: educación y ferrocarriles. Personalismo y concentración del poder: imponer su voluntad y centralizar reduciendo los estados."},
+      {type:"mc", q:"Guzmán Blanco convirtió la iglesia de la Santísima Trinidad en…",
+        options:["el Capitolio","el Panteón Nacional","el Teatro Municipal"], answer:1,
+        fb:"La convirtió en el Panteón Nacional, donde reposan los restos de los próceres, incluido Bolívar."},
+      {type:"mc", q:"¿En cuántas etapas gobernó Guzmán Blanco (Septenio, Quinquenio y Bienio)?",
+        options:["Una","Tres","Cinco"], answer:1,
+        fb:"Tres etapas: el Septenio (1870–1877), el Quinquenio (1879–1884) y la Aclamación o Bienio (1886–1888)."},
+      {type:"tf", q:"La instrucción pública gratuita y obligatoria fue decretada por Guzmán Blanco en 1870.",
+        answer:true, fb:"Verdadero: fue una de sus obras más importantes y todavía hoy se recuerda."}
+    ]},
+  { id:3, ico:"🔍", name:"Analista de fuentes", desc:"Interpreta la Fuente A y la Fuente B.", badge:"Analista de fuentes", badgeIco:"🔍",
+    questions:[
+      {type:"mc", q:"La FUENTE A habla de “personalismo autocrático” y de un gobierno “ilegal”. ¿Critica o defiende a Guzmán Blanco?",
+        options:["Lo critica","Lo defiende"], answer:0,
+        fb:"La Fuente A lo CRITICA: dice que era personalista, autocrático e ilegal. Es una fuente opositora."},
+      {type:"mc", q:"La FUENTE B (periódico La Opinión Nacional) habla de “adhesión al Ilustre Americano”. ¿Critica o defiende?",
+        options:["Lo critica","Lo defiende"], answer:1,
+        fb:"La Fuente B lo DEFIENDE: es oficialista y elogia los “grandiosos actos del Septenio”."},
+      {type:"match", q:"Relaciona cada frase con la intención de su autor (Crítica o Defensa):",
+        pairs:[["“personalismo autocrático”","Crítica"],["“aprobaban automáticamente sin discusión”","Crítica"],["“adhesión al Ilustre Americano”","Defensa"],["“progreso material y adelanto intelectual”","Defensa"]],
+        fb:"Las frases sobre personalismo y aprobar sin discusión son críticas (Fuente A). Las de adhesión y progreso son de defensa (Fuente B)."},
+      {type:"multi", q:"Selecciona los argumentos de DEFENSA que aparecen en la Fuente B:",
+        options:["Progreso material","Adelanto intelectual","Riqueza pública","Falta de legalidad","Personalismo del Presidente"],
+        answers:[0,1,2], fb:"La Fuente B defiende a Guzmán con: progreso material, adelanto intelectual y riqueza pública. “Falta de legalidad” y “personalismo” son críticas de la Fuente A."},
+      {type:"mc", q:"¿Qué quiere demostrar la FUENTE A?",
+        options:["Que Guzmán trajo progreso y merece apoyo","Que el régimen de Guzmán era ilegal y personalista","Que el petróleo era importante"], answer:1,
+        fb:"La Fuente A quiere demostrar que el régimen era ilegal y personalista, sin separación de poderes."},
+      {type:"tf", q:"La Fuente A defiende que debe existir separación de poderes (ejecutivo, legislativo y judicial).",
+        answer:true, fb:"Verdadero: la Fuente A reclama que cada poder actúe en su propia órbita, sin que uno invada a los otros."}
+    ]},
+  { id:4, ico:"⚖️", name:"Constituciones", desc:"Compara 1864, 1874 y 1881.", badge:"Experta en constituciones", badgeIco:"⚖️",
+    questions:[
+      {type:"match", q:"Relaciona cada constitución con su característica de elección:",
+        pairs:[["Constitución de 1864","Voto directo y SECRETO"],["Constitución de 1874","Voto público, escrito y firmado"],["Constitución de 1881","Elección indirecta por el Consejo Federal"]],
+        fb:"1864: voto secreto. 1874: voto público y firmado (se pierde el secreto). 1881: ya no vota el pueblo directamente, elige el Consejo Federal."},
+      {type:"mc", q:"¿Qué constitución redujo el período presidencial de 4 a 2 años?",
+        options:["1864","1874","1881"], answer:1,
+        fb:"En 1864 el período era de 4 años; la de 1874 lo redujo a 2 años (y la de 1881 lo mantuvo en 2)."},
+      {type:"mc", q:"¿Cuál constitución creó el Consejo Federal?",
+        options:["1864","1874","1881"], answer:2,
+        fb:"La de 1881 creó el Consejo Federal, que pasó a elegir al Presidente (elección indirecta)."},
+      {type:"tf", q:"Las tres constituciones (1864, 1874 y 1881) prohíben la reelección presidencial inmediata.",
+        answer:true, fb:"Verdadero: es una de sus semejanzas. Ninguna permitía reelegirse para el período inmediato."},
+      {type:"mc", q:"El gran cambio de la Constitución de 1881 fue…",
+        options:["Aumentar los estados a 30","Reducir de 20 a 9 estados y centralizar el poder","Permitir la reelección"], answer:1,
+        fb:"En 1881 se redujeron los estados de 20 a 9 grandes entidades, concentrando (centralizando) más el poder."},
+      {type:"multi", q:"Selecciona las SEMEJANZAS de las tres constituciones:",
+        options:["Son federales (Estados Unidos de Venezuela)","Cada Estado tiene un voto","Prohíben la reelección inmediata","Todas usan elección indirecta"],
+        answers:[0,1,2], fb:"Las tres son federales, dan un voto por Estado y prohíben la reelección inmediata. La elección indirecta solo aparece en 1881."}
+    ]},
+  { id:5, ico:"🗳️", name:"Diez años de transición", desc:"Presidentes 1888–1899 y el Mocho Hernández.", badge:"Historiadora del siglo XIX", badgeIco:"🎓",
+    questions:[
+      {type:"match", q:"Relaciona cada presidente con CÓMO llegó al poder:",
+        pairs:[["Juan Pablo Rojas Paúl","Elección (apoyado por Guzmán)"],["Joaquín Crespo","Acción armada (Revolución Legalista)"],["Ignacio Andrade","Elecciones fraudulentas"]],
+        fb:"Rojas Paúl llegó por elección apoyado por Guzmán; Crespo por las armas (Revolución Legalista, 1892); Andrade por fraude (1897)."},
+      {type:"mc", q:"¿Quién intentó extender su mandato con el “continuismo” (reforma de 1891)?",
+        options:["Rojas Paúl","Raimundo Andueza Palacio","Ignacio Andrade"], answer:1,
+        fb:"Andueza Palacio quiso alargar su período de 2 a 4 años. Eso provocó la Revolución Legalista de Crespo."},
+      {type:"mc", q:"¿Quién llegó al poder mediante la Revolución Legalista de 1892?",
+        options:["Joaquín Crespo","Cipriano Castro","Ignacio Andrade"], answer:0,
+        fb:"Joaquín Crespo derrocó a Andueza Palacio con la Revolución Legalista en 1892."},
+      {type:"mc", q:"¿Dónde murió Joaquín Crespo en 1898?",
+        options:["En Caracas","En la batalla de La Mata Carmelera","En Queipa"], answer:1,
+        fb:"Crespo murió combatiendo en La Mata Carmelera (1898) contra la rebelión del Mocho Hernández."},
+      {type:"tf", q:"José Manuel “el Mocho” Hernández llegó a ser presidente de Venezuela.",
+        answer:false, fb:"Falso: nunca fue presidente. Fue el candidato que denunció el fraude electoral de 1897 y se alzó en armas."},
+      {type:"mc", q:"¿Qué denunció el Mocho Hernández en las elecciones de 1897?",
+        options:["Un fraude electoral a favor de Ignacio Andrade","Que faltaba petróleo","Que Guzmán seguía mandando"], answer:0,
+        fb:"Denunció que las elecciones fueron un fraude que dio la victoria a Andrade (apoyado por Crespo)."},
+      {type:"mc", q:"¿Quién derrocó a Ignacio Andrade en 1899?",
+        options:["Joaquín Crespo","Cipriano Castro (Revolución Restauradora)","Andueza Palacio"], answer:1,
+        fb:"Cipriano Castro derrocó a Andrade en 1899 con la Revolución Liberal Restauradora, cerrando la transición."}
+    ]},
+  { id:6, ico:"🏆", name:"Reto del Historiador", desc:"Mezcla todo: el desafío final.", badge:"Historiadora del siglo XIX", badgeIco:"🎓", final:true,
+    questions:[
+      {type:"order", q:"RETO FINAL — Ordena estos tres procesos del más antiguo al más reciente:",
+        items:["Septenio de Guzmán Blanco (1870)","Revolución Legalista de Crespo (1892)","Revolución Restauradora de Castro (1899)"],
+        fb:"1870 → 1892 → 1899. Del Guzmancismo a la transición y, por fin, a la llegada de Castro."},
+      {type:"mc", q:"¿Cuál fuente DEFIENDE a Guzmán Blanco?",
+        options:["La Fuente A","La Fuente B (La Opinión Nacional)"], answer:1,
+        fb:"La Fuente B (La Opinión Nacional) lo defiende; la Fuente A lo critica."},
+      {type:"mc", q:"¿Qué constitución estableció la elección indirecta por el Consejo Federal?",
+        options:["1864","1874","1881"], answer:2, fb:"La de 1881 creó el Consejo Federal y la elección indirecta."},
+      {type:"mc", q:"¿Qué pozo abrió la era petrolera moderna en 1914?",
+        options:["Barroso II","Zumaque I","La Petrolia"], answer:1, fb:"El Zumaque I (Mene Grande, 1914)."},
+      {type:"mc", q:"¿Qué presidente de la transición llegó al poder por las armas?",
+        options:["Rojas Paúl","Joaquín Crespo","Ignacio Andrade"], answer:1, fb:"Joaquín Crespo, con la Revolución Legalista de 1892."},
+      {type:"tf", q:"La Constitución de 1874 introdujo el voto público, escrito y firmado.",
+        answer:true, fb:"Verdadero: cambió el voto secreto de 1864 por uno público y firmado."},
+      {type:"mc", q:"El Mocho Hernández pasó a la historia por…",
+        options:["Descubrir el petróleo","Denunciar el fraude electoral de 1897 y alzarse en armas","Escribir la Constitución de 1881"], answer:1,
+        fb:"Por denunciar el fraude a favor de Andrade y alzarse en armas (Revolución de Queipa)."},
+      {type:"mc", q:"“Sembrar el petróleo” significa…",
+        options:["Plantar semillas cerca de los pozos","Invertir la riqueza petrolera en desarrollo duradero","Exportar todo el petróleo"], answer:1,
+        fb:"Significa usar el dinero del petróleo para crear desarrollo que perdure."}
+    ]}
+];
+
+/* ===================== ESTADO ===================== */
+const PTS = 10;
+let state = {
+  score:0, lives:3,
+  results:{},            // modId -> {correct, total}
+  badges:{},             // badgeName -> true
+  curMod:null, qIndex:0, modCorrect:0,
+  answered:0, totalCorrect:0
+};
+const TOTAL_Q = MODULES.reduce((a,m)=>a+m.questions.length,0);
+
+/* ===================== UTIL ===================== */
+function $(id){return document.getElementById(id)}
+function show(id){["screen-home","screen-map","screen-quiz","screen-final"].forEach(s=>$(s).classList.add("hide"));$(id).classList.remove("hide")}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function updHud(){
+  $("hudScore").textContent=state.score;
+  $("hudLives").textContent="❤️".repeat(state.lives)+"🖤".repeat(Math.max(0,3-state.lives));
+  $("hudBadges").textContent=Object.keys(state.badges).length;
+  $("hudBar").style.width=(state.answered/TOTAL_Q*100)+"%";
+  const m=state.curMod!=null?MODULES[state.curMod]:null;
+  $("hudMod").textContent=m?(m.ico+" "+(state.qIndex+1)+"/"+m.questions.length):"";
+}
+function toast(msg){const t=$("toast");t.innerHTML=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600)}
+function loseLife(){
+  state.lives--;
+  if(state.lives<=0){
+    setTimeout(()=>{toast("💛 ¡Sin vidas, pero seguimos aprendiendo! Recargamos tus corazones.");state.lives=3;updHud();},400);
+  }
+}
+
+/* ===================== NAVEGACIÓN ===================== */
+function goMap(){
+  state.curMod=null;
+  $("hud").classList.remove("hide");
+  renderMap(); show("screen-map"); updHud();
+}
+function renderMap(){
+  const g=$("modgrid"); g.innerHTML="";
+  let allCoreDone=true;
+  MODULES.filter(m=>!m.final).forEach(m=>{
+    const r=state.results[m.id];
+    const done=!!r;
+    if(!done) allCoreDone=false;
+    const div=document.createElement("div");
+    div.className="modcard";
+    div.onclick=()=>startModule(m.id);
+    div.innerHTML=`<div class="ico">${m.ico}</div>
+      <h3>${m.id+1}. ${m.name}</h3><p>${m.desc}</p>
+      ${m.badge?`<span class="pill">🏅 ${m.badge}</span>`:""}
+      ${done?`<span class="done">✅</span>`:""}
+      ${r?`<div style="font-size:.78rem;color:#667;margin-top:5px">Aciertos: ${r.correct}/${r.total}</div>`:""}`;
+    g.appendChild(div);
+  });
+  $("finalBtn").classList.toggle("hide", !allCoreDone);
+  if(allCoreDone) $("finalBtn").textContent = state.results[6] ? "🏆 Repetir Reto del Historiador" : "🏆 ¡Reto del Historiador desbloqueado!";
+}
+function startModule(id){
+  state.curMod=id; state.qIndex=0; state.modCorrect=0;
+  show("screen-quiz"); renderQuestion(); updHud();
+}
+
+/* ===================== RENDER PREGUNTA ===================== */
+let answerState=null; // estructura temporal de respuesta
+
+function renderQuestion(){
+  const m=MODULES[state.curMod];
+  const q=m.questions[state.qIndex];
+  $("qmeta").textContent = m.ico+" "+m.name+" · Pregunta "+(state.qIndex+1)+" de "+m.questions.length;
+  $("qtext").textContent = q.q;
+  const body=$("qbody"); body.innerHTML="";
+  $("fb").style.display="none"; $("fb").className="fb";
+  $("nextBtn").classList.add("hide");
+  $("checkBtn").classList.add("hide");
+  answerState=null;
+
+  if(q.type==="mc"||q.type==="tf"){
+    const opts = q.type==="tf" ? ["Verdadero","Falso"] : q.options;
+    opts.forEach((o,i)=>{
+      const b=document.createElement("button");
+      b.className="opt"; b.textContent=o;
+      b.onclick=()=>pickSingle(i,b);
+      body.appendChild(b);
+    });
+  }
+  else if(q.type==="multi"){
+    answerState={picked:new Set()};
+    q.options.forEach((o,i)=>{
+      const b=document.createElement("button");
+      b.className="opt"; b.innerHTML="☐ "+o;
+      b.onclick=()=>{
+        if(answerState.picked.has(i)){answerState.picked.delete(i);b.classList.remove("sel");b.innerHTML="☐ "+o;}
+        else{answerState.picked.add(i);b.classList.add("sel");b.innerHTML="☑ "+o;}
+      };
+      body.appendChild(b);
+    });
+    $("checkBtn").classList.remove("hide");
+  }
+  else if(q.type==="order"){
+    answerState={seq:[]};
+    const box=document.createElement("div"); box.className="seqbox"; box.id="seqbox";
+    box.innerHTML='<span style="color:#aab;font-size:.85rem">Toca los eventos en orden…</span>';
+    body.appendChild(box);
+    const pool=document.createElement("div"); pool.className="col"; pool.id="orderpool";
+    shuffle(q.items).forEach(it=>{
+      const c=document.createElement("button"); c.className="chip"; c.textContent=it;
+      c.onclick=()=>{
+        if(c.classList.contains("matched"))return;
+        answerState.seq.push(it); c.classList.add("matched");
+        renderSeq();
+      };
+      pool.appendChild(c);
+    });
+    body.appendChild(pool);
+    const reset=document.createElement("button");
+    reset.className="btn btn-ghost"; reset.style.marginTop="10px"; reset.style.width="100%"; reset.textContent="↺ Reiniciar orden";
+    reset.onclick=()=>{answerState.seq=[];[...pool.children].forEach(c=>c.classList.remove("matched"));renderSeq();};
+    body.appendChild(reset);
+    $("checkBtn").classList.remove("hide");
+  }
+  else if(q.type==="match"){
+    answerState={pairs:{}, selLeft:null};
+    const lefts=q.pairs.map(p=>p[0]);
+    const rights=shuffle(q.pairs.map(p=>p[1]));
+    const cols=document.createElement("div"); cols.className="cols";
+    const cL=document.createElement("div"); cL.className="col";
+    const cR=document.createElement("div"); cR.className="col";
+    lefts.forEach(l=>{
+      const c=document.createElement("button"); c.className="chip"; c.dataset.l=l; c.textContent=l;
+      c.onclick=()=>{
+        if(c.classList.contains("matched"))return;
+        [...cL.children].forEach(x=>x.classList.remove("sel"));
+        c.classList.add("sel"); answerState.selLeft=c;
+      };
+      cL.appendChild(c);
+    });
+    rights.forEach(r=>{
+      const c=document.createElement("button"); c.className="chip"; c.dataset.r=r; c.textContent=r;
+      c.onclick=()=>{
+        if(!answerState.selLeft||c.classList.contains("matched"))return;
+        const lc=answerState.selLeft;
+        answerState.pairs[lc.dataset.l]=r;
+        lc.classList.remove("sel"); lc.classList.add("matched");
+        c.classList.add("matched");
+        lc.innerHTML=lc.dataset.l+'<span class="tag">➜ '+r+'</span>';
+        answerState.selLeft=null;
+      };
+      cR.appendChild(c);
+    });
+    cols.appendChild(cL); cols.appendChild(cR); body.appendChild(cols);
+    const reset=document.createElement("button");
+    reset.className="btn btn-ghost"; reset.style.marginTop="10px"; reset.style.width="100%"; reset.textContent="↺ Reiniciar";
+    reset.onclick=()=>renderQuestion();
+    body.appendChild(reset);
+    $("checkBtn").classList.remove("hide");
+  }
+  else if(q.type==="classify"){
+    answerState={assign:{}, sel:null};
+    const pool=document.createElement("div"); pool.className="col"; pool.id="clpool";
+    shuffle(q.items).forEach(it=>{
+      const c=document.createElement("button"); c.className="chip"; c.dataset.t=it.t; c.dataset.cat=it.cat; c.textContent=it.t;
+      c.onclick=()=>{
+        if(c.dataset.placed)return;
+        [...pool.querySelectorAll(".chip")].forEach(x=>x.classList.remove("sel"));
+        c.classList.add("sel"); answerState.sel=c;
+      };
+      pool.appendChild(c);
+    });
+    body.appendChild(pool);
+    const wrap=document.createElement("div"); wrap.className="catwrap";
+    q.cats.forEach((cat,ci)=>{
+      const box=document.createElement("div"); box.className="catbox";
+      box.innerHTML="<h4>"+cat+"</h4>";
+      box.onclick=()=>{
+        if(!answerState.sel)return;
+        const c=answerState.sel;
+        answerState.assign[c.dataset.t]={chosen:ci, correct:parseInt(c.dataset.cat)};
+        c.dataset.placed="1"; c.classList.remove("sel");
+        box.appendChild(c);
+        answerState.sel=null;
+      };
+      wrap.appendChild(box);
+    });
+    body.appendChild(wrap);
+    const reset=document.createElement("button");
+    reset.className="btn btn-ghost"; reset.style.marginTop="10px"; reset.style.width="100%"; reset.textContent="↺ Reiniciar";
+    reset.onclick=()=>renderQuestion();
+    body.appendChild(reset);
+    $("checkBtn").classList.remove("hide");
+  }
+}
+
+function renderSeq(){
+  const box=$("seqbox");
+  if(answerState.seq.length===0){box.innerHTML='<span style="color:#aab;font-size:.85rem">Toca los eventos en orden…</span>';return;}
+  box.innerHTML="";
+  answerState.seq.forEach((s,i)=>{
+    const sp=document.createElement("span"); sp.className="seqitem"; sp.textContent=(i+1)+". "+s;
+    box.appendChild(sp);
+  });
+}
+
+/* ===================== RESPUESTAS ===================== */
+function pickSingle(i,btn){
+  const q=MODULES[state.curMod].questions[state.qIndex];
+  const correct = q.type==="tf" ? ((i===0)===q.answer) : (i===q.answer);
+  [...$("qbody").children].forEach(b=>{b.disabled=true;b.classList.add("dim")});
+  if(correct){btn.classList.remove("dim");btn.classList.add("correct");registerResult(true,q.fb);}
+  else{
+    btn.classList.remove("dim");btn.classList.add("wrong");
+    // marcar la correcta
+    const idx = q.type==="tf" ? (q.answer?0:1) : q.answer;
+    const correctBtn=$("qbody").children[idx];
+    correctBtn.classList.remove("dim");correctBtn.classList.add("correct");
+    registerResult(false,q.fb);
+  }
+}
+
+function checkAnswer(){
+  const q=MODULES[state.curMod].questions[state.qIndex];
+  let correct=false;
+  if(q.type==="multi"){
+    const want=new Set(q.answers);
+    const got=answerState.picked;
+    correct = want.size===got.size && [...want].every(x=>got.has(x));
+    [...$("qbody").children].forEach((b,i)=>{
+      b.disabled=true;
+      if(q.answers.includes(i))b.classList.add("correct");
+      else if(got.has(i))b.classList.add("wrong");
+    });
+  }
+  else if(q.type==="order"){
+    correct = answerState.seq.length===q.items.length && answerState.seq.every((s,i)=>s===q.items[i]);
+    const box=$("seqbox");[...box.children].forEach((sp,i)=>{
+      sp.style.background = answerState.seq[i]===q.items[i] ? "var(--verde)" : "var(--rojo)";
+    });
+    if(!correct){
+      const right=document.createElement("div");
+      right.style.cssText="margin-top:8px;font-size:.85rem;color:var(--azul)";
+      right.innerHTML="<b>Orden correcto:</b> "+q.items.map((x,i)=>(i+1)+". "+x).join("  ");
+      $("qbody").appendChild(right);
+    }
+  }
+  else if(q.type==="match"){
+    correct=true;
+    const map={}; q.pairs.forEach(p=>map[p[0]]=p[1]);
+    [...$("qbody").querySelectorAll(".chip[data-l]")].forEach(c=>{
+      const ok=answerState.pairs[c.dataset.l]===map[c.dataset.l];
+      if(!ok){correct=false;c.classList.add("wrong");
+        c.innerHTML=c.dataset.l+'<span class="tag">✔ '+map[c.dataset.l]+'</span>';}
+      else c.classList.add("correct");
+    });
+    if(Object.keys(answerState.pairs).length<q.pairs.length)correct=false;
+  }
+  else if(q.type==="classify"){
+    correct=true;
+    const placed=Object.keys(answerState.assign).length;
+    if(placed<q.items.length)correct=false;
+    [...$("qbody").querySelectorAll(".chip[data-t]")].forEach(c=>{
+      const a=answerState.assign[c.dataset.t];
+      if(a){ if(a.chosen===a.correct)c.classList.add("correct"); else{c.classList.add("wrong");correct=false;} }
+      else correct=false;
+    });
+  }
+  [...$("qbody").querySelectorAll("button")].forEach(b=>b.disabled=true);
+  $("checkBtn").classList.add("hide");
+  registerResult(correct,q.fb);
+}
+
+function registerResult(correct,fb){
+  state.answered++;
+  if(correct){
+    state.score+=PTS; state.totalCorrect++; state.modCorrect++;
+    showFb(true,"¡Correcto! +"+PTS+" pts",fb);
+  }else{
+    loseLife();
+    showFb(false,"Respuesta incorrecta",fb);
+  }
+  $("nextBtn").classList.remove("hide");
+  updHud();
+}
+
+function showFb(ok,title,body){
+  const f=$("fb");
+  f.className="fb "+(ok?"ok":"no");
+  f.innerHTML="<b>"+(ok?"✅ ":"❌ ")+title+"</b>"+body;
+  f.style.display="block";
+}
+
+function nextQuestion(){
+  const m=MODULES[state.curMod];
+  if(state.qIndex < m.questions.length-1){
+    state.qIndex++; renderQuestion(); updHud();
+  }else{
+    finishModule();
+  }
+}
+
+function finishModule(){
+  const m=MODULES[state.curMod];
+  state.results[m.id]={correct:state.modCorrect,total:m.questions.length};
+  const pct=state.modCorrect/m.questions.length;
+  // insignia
+  if(m.badge && pct>=0.7 && !state.badges[m.badge]){
+    state.badges[m.badge]=true;
+    toast("🏅 ¡Insignia desbloqueada!<br>"+(m.badgeIco||"🏅")+" "+m.badge);
+  }
+  // pantalla resumen de módulo
+  show("screen-quiz");
+  const msg = pct===1?"¡Perfecto! 🌟":pct>=0.7?"¡Muy bien! 👏":pct>=0.4?"¡Vas mejorando! 💪":"¡Sigue practicando! 📚";
+  $("qmeta").textContent="Módulo completado";
+  $("qtext").textContent=m.ico+" "+m.name;
+  $("qbody").innerHTML=`<div class="center">
+    <div class="bigscore">${state.modCorrect}/${m.questions.length}</div>
+    <p style="margin:8px 0 4px;font-size:1.1rem;font-weight:700;color:var(--azul)">${msg}</p>
+    ${m.badge&&pct>=0.7?`<p class="pill">🏅 Insignia: ${m.badge}</p>`:m.badge?`<p style="font-size:.85rem;color:#888">Logra 70% para ganar la insignia “${m.badge}”.</p>`:""}
+  </div>`;
+  $("fb").style.display="none";
+  $("checkBtn").classList.add("hide");
+  $("nextBtn").classList.add("hide");
+  setTimeout(()=>{ goMap(); }, 1700);
+}
+
+/* ===================== PANTALLA FINAL ===================== */
+function showFinalScreen(){
+  $("hud").classList.remove("hide");
+  const doneMods=Object.keys(state.results).length;
+  const pct = state.answered? Math.round(state.totalCorrect/state.answered*100):0;
+  // temas dominados / a reforzar
+  const dom=[], ref=[];
+  MODULES.forEach(m=>{
+    const r=state.results[m.id];
+    if(!r)return;
+    (r.correct/r.total>=0.7?dom:ref).push(m.name);
+  });
+  let rec;
+  if(pct>=85) rec="¡Excelente dominio! Estás muy bien preparada para tu evaluación. Repasa solo lo marcado en rojo.";
+  else if(pct>=60) rec="Vas por buen camino. Vuelve a jugar los módulos donde fallaste y repasa esas secciones en la guía.";
+  else rec="Conviene estudiar de nuevo la guía resuelta con papá y luego repetir el juego. ¡Tú puedes!";
+
+  const badgesHtml = ["📜 Cronista|Cronista","🔍 Analista de fuentes|Analista de fuentes","⚖️ Experta en constituciones|Experta en constituciones","🎓 Historiadora del siglo XIX|Historiadora del siglo XIX"]
+    .map(b=>{const[label,key]=b.split("|");const on=state.badges[key];const[ico,...n]=label.split(" ");
+      return `<div class="ins ${on?'on':''}"><div class="medal">${ico}</div><small>${n.join(" ")}</small></div>`;}).join("");
+
+  $("screen-final").innerHTML=`
+    <h1>🎉 ¡Resultado de Mía!</h1>
+    <p class="sub">Reto de Historia de Venezuela</p>
+    <div class="ring"><div class="bigscore">${state.score} pts</div>
+      <div style="font-size:1.3rem;font-weight:700;color:var(--azul2)">${pct}% de aciertos</div></div>
+    <div class="badges">${badgesHtml}</div>
+    <div class="statgrid">
+      <div class="statbox"><div class="n">${state.totalCorrect}/${state.answered||0}</div><div class="l">Respuestas correctas</div></div>
+      <div class="statbox"><div class="n">${doneMods}/${MODULES.length}</div><div class="l">Módulos completados</div></div>
+      <div class="statbox"><div class="n">${Object.keys(state.badges).length}/4</div><div class="l">Insignias ganadas</div></div>
+      <div class="statbox"><div class="n">${state.lives}❤️</div><div class="l">Vidas restantes</div></div>
+    </div>
+    <div class="lista"><h4>✅ Temas dominados</h4>${dom.length?"<ul>"+dom.map(d=>"<li>"+d+"</li>").join("")+"</ul>":"<p style='font-size:.9rem;color:#888'>Aún ninguno al 70%. ¡Sigue jugando!</p>"}</div>
+    <div class="lista"><h4>📌 Temas a reforzar</h4>${ref.length?"<ul>"+ref.map(d=>"<li>"+d+"</li>").join("")+"</ul>":"<p style='font-size:.9rem;color:#888'>¡Ninguno! Gran trabajo. 🌟</p>"}</div>
+    <div class="lista"><h4>💡 Recomendación final</h4><p style="font-size:.92rem">${rec}</p></div>
+    <div class="dadmsg">👨‍👧 Muéstrale esta pantalla a papá para revisar juntos el resultado.</div>
+    <div class="actions">
+      <button class="btn btn-azul" onclick="goMap()">↩ Volver al mapa</button>
+      <button class="btn btn-main" onclick="restart()">🔄 Jugar otra vez</button>
+    </div>`;
+  show("screen-final");
+}
+
+function restart(){
+  state={score:0,lives:3,results:{},badges:{},curMod:null,qIndex:0,modCorrect:0,answered:0,totalCorrect:0};
+  goMap();
+}
+</script>
+</body>
+</html>

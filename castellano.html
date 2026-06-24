@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Castellano 1er Año — Reto Interactivo de Sabrina</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+    background: linear-gradient(135deg,#6a11cb 0%,#2575fc 100%);
+    min-height: 100vh;
+    color: #222;
+  }
+  .app {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  header {
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 28px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+  }
+  header h1 { margin: 0 0 6px 0; color: #2575fc; font-size: 1.5em; }
+  header p { margin: 0; color: #555; font-size: 0.95em; }
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 14px 28px;
+    border-bottom: 2px dashed #eee;
+  }
+  .stat {
+    font-weight: 600;
+    color: #333;
+  }
+  .stat span { color: #2575fc; font-size: 1.2em; }
+  .progress-bar {
+    flex: 1;
+    margin: 0 20px;
+    height: 14px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg,#00c6ff,#0072ff);
+    transition: width 0.4s ease;
+  }
+  main {
+    background: #fff;
+    padding: 28px;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    min-height: 380px;
+  }
+  .level-title {
+    color: #6a11cb;
+    border-left: 5px solid #6a11cb;
+    padding-left: 12px;
+    margin-bottom: 4px;
+  }
+  .level-sub { color: #888; margin-top: 0; font-size: 0.9em; }
+  .question { font-size: 1.1em; margin: 18px 0; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    padding: 14px 18px;
+    background: #f4f6ff;
+    border: 2px solid #dde3ff;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1em;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .opt:hover:not(:disabled) { background: #e3e9ff; border-color: #2575fc; transform: translateX(4px); }
+  .opt.correct { background: #d4edda; border-color: #28a745; }
+  .opt.wrong { background: #f8d7da; border-color: #dc3545; }
+  .opt:disabled { cursor: default; }
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 0.95em;
+    line-height: 1.5;
+    display: none;
+  }
+  .feedback.ok { background: #d4edda; color: #155724; border-left: 5px solid #28a745; }
+  .feedback.bad { background: #fff3cd; color: #856404; border-left: 5px solid #ffc107; }
+  .feedback.show { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; } }
+  .btn {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
+  .passage {
+    background: #fdf6e3;
+    border-left: 4px solid #d4a017;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-style: italic;
+    margin: 12px 0;
+    font-size: 0.95em;
+    line-height: 1.55;
+  }
+  .drag-area { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .chip {
+    padding: 6px 14px;
+    background: #e0e7ff;
+    border: 2px solid #a5b4fc;
+    border-radius: 20px;
+    cursor: grab;
+    user-select: none;
+    font-size: 0.9em;
+  }
+  .chip.placed { opacity: 0.4; cursor: default; }
+  .bins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  @media (max-width: 640px) { .bins { grid-template-columns: repeat(2, 1fr); } }
+  .bin {
+    min-height: 110px;
+    border: 2px dashed #a5b4fc;
+    border-radius: 10px;
+    padding: 8px;
+    background: #f8faff;
+    transition: background 0.2s;
+  }
+  .bin:hover { background: #eef2ff; }
+  .bin h4 { margin: 4px 0 8px 0; color: #2575fc; font-size: 0.85em; text-transform: uppercase; }
+  .bin .dropped { display: flex; flex-wrap: wrap; gap: 5px; }
+  .bin .dropped span {
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 0.85em;
+    background: #e0e7ff;
+  }
+  .bin .dropped span.right { background: #d4edda; }
+  .bin .dropped span.wrong { background: #f8d7da; text-decoration: line-through; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .badge {
+    padding: 6px 12px;
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  .final {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .final .score {
+    font-size: 3em;
+    color: #2575fc;
+    font-weight: 800;
+  }
+  .final h2 { color: #6a11cb; }
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #dde3ff;
+    font-family: inherit;
+    font-size: 0.95em;
+  }
+  .hint {
+    background: #e7f3ff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.88em;
+    color: #004085;
+    margin: 10px 0;
+    border-left: 4px solid #2575fc;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>🎓 Castellano 1er Año — Reto Interactivo</h1>
+    <p>Guía de refuerzo · 2do Lapso · Para Sabrina 💜</p>
+  </header>
+  <div class="hud">
+    <div class="stat">⭐ Puntos: <span id="score">0</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="stat">🏆 Nivel: <span id="level">1</span>/6</div>
+  </div>
+  <main id="main"></main>
+  <div class="badges" id="badges"></div>
+</div>
+
+<script>
+const state = {
+  score: 0,
+  level: 0,
+  badges: [],
+  answered: 0,
+  total: 0
+};
+
+// ============ LEVELS ============
+const levels = [
+  {
+    title: "Nivel 1 · Clases de palabras 📝",
+    sub: "Toca una palabra y luego la caja de la categoría correcta. ¡Cuidado con las trampas!",
+    type: "classify",
+    intro: "Fragmento de 'Atima Imaoma' (plan lector). Clasifica cada palabra en su clase gramatical.",
+    words: [
+      // Sustantivos (5)
+      { w: "cazadores", cat: "Sustantivo" },
+      { w: "niños", cat: "Sustantivo" },
+      { w: "mercado", cat: "Sustantivo" },
+      { w: "madre", cat: "Sustantivo" },
+      { w: "lanzas", cat: "Sustantivo" },
+      // Verbos (5)
+      { w: "preguntaba", cat: "Verbo" },
+      { w: "mordió", cat: "Verbo" },
+      { w: "cazaba", cat: "Verbo" },
+      { w: "gritó", cat: "Verbo" },
+      { w: "suplicando", cat: "Verbo" },
+      // Adjetivos (5)
+      { w: "rojo", cat: "Adjetivo" },
+      { w: "dulce", cat: "Adjetivo" },
+      { w: "pequeña", cat: "Adjetivo" },
+      { w: "descolorida", cat: "Adjetivo" },
+      { w: "delgada", cat: "Adjetivo" },
+      // Adverbios (4)
+      { w: "además", cat: "Adverbio" },
+      { w: "todavía", cat: "Adverbio" },
+      { w: "apenas", cat: "Adverbio" },
+      { w: "tanto", cat: "Adverbio" },
+      // Preposiciones (5)
+      { w: "sobre", cat: "Preposición" },
+      { w: "hacia", cat: "Preposición" },
+      { w: "contra", cat: "Preposición" },
+      { w: "entre", cat: "Preposición" },
+      { w: "con", cat: "Preposición" },
+      // Artículos (4)
+      { w: "los", cat: "Artículo" },
+      { w: "una", cat: "Artículo" },
+      { w: "el", cat: "Artículo" },
+      { w: "las", cat: "Artículo" }
+    ],
+    bins: ["Sustantivo","Verbo","Adjetivo","Adverbio","Preposición","Artículo"],
+    explanation: "📌 <b>Sustantivo:</b> nombra personas, animales, cosas o ideas (cazadores, madre). <b>Verbo:</b> expresa acciones o estados (mordió, gritó). <b>Adjetivo:</b> describe cualidades del sustantivo (dulce, pequeña). <b>Adverbio:</b> modifica al verbo, adjetivo u otro adverbio e indica modo, tiempo, lugar o cantidad (además, apenas). <b>Preposición:</b> palabra invariable que enlaza (a, con, sobre, hacia, entre, contra...). <b>Artículo:</b> acompaña al sustantivo y puede ser determinado (el, la, los, las) o indeterminado (un, una, unos, unas)."
+  },
+  {
+    title: "Nivel 2 · Sintagma Nominal y Verbal 🧩",
+    sub: "Identifica qué parte de cada oración es el Sintagma Nominal (sujeto) y cuál es el Sintagma Verbal (predicado).",
+    type: "quiz",
+    questions: [
+      {
+        q: "En la oración: <i>«El guerrero ganó todos sus combates»</i>, ¿cuál es el Sintagma Nominal?",
+        opts: ["ganó todos sus combates","El guerrero","todos sus combates","sus combates"],
+        correct: 1,
+        exp: "El Sintagma Nominal es el sujeto: <b>'El guerrero'</b>. Responde a ¿quién ganó? El resto ('ganó todos sus combates') es el Sintagma Verbal."
+      },
+      {
+        q: "En: <i>«La banda de rock presentó su último disco en un concierto inolvidable»</i>, el Sintagma Verbal es:",
+        opts: ["La banda de rock","de rock","presentó su último disco en un concierto inolvidable","su último disco"],
+        correct: 2,
+        exp: "El Sintagma Verbal incluye al verbo y todo lo que lo acompaña: <b>'presentó su último disco en un concierto inolvidable'</b>."
+      },
+      {
+        q: "En: <i>«La mujer de cabello oscuro es mi madre»</i>, el sujeto (Sintagma Nominal) es:",
+        opts: ["es mi madre","La mujer","mi madre","La mujer de cabello oscuro"],
+        correct: 3,
+        exp: "Todo el grupo <b>'La mujer de cabello oscuro'</b> funciona como sujeto. 'de cabello oscuro' es un complemento del sustantivo 'mujer'."
+      },
+      {
+        q: "¿Qué es un sujeto tácito o elíptico?",
+        opts: ["Un sujeto que aparece dos veces","Un sujeto que no se escribe pero se entiende","Un sujeto sin verbo","Un sujeto al final de la oración"],
+        correct: 1,
+        exp: "El sujeto <b>tácito</b> se omite porque el verbo ya indica quién hace la acción. Ej: 'Estudio castellano' → el sujeto es 'yo' (tácito)."
+      }
+    ]
+  },
+  {
+    title: "Nivel 3 · Tipología Textual 📚",
+    sub: "Reconoce qué tipo de texto es cada uno.",
+    type: "quiz",
+    questions: [
+      {
+        q: "Un texto que da datos objetivos para que entiendas un tema (como una enciclopedia) es:",
+        opts: ["Narrativo","Argumentativo","Explicativo/Informativo","Dialógico"],
+        correct: 2,
+        exp: "El texto <b>explicativo (informativo)</b> presenta hechos y datos objetivos, sin opiniones."
+      },
+      {
+        q: "Un discurso político que intenta convencerte de votar por alguien es:",
+        opts: ["Descriptivo","Argumentativo","Narrativo","Dialógico"],
+        correct: 1,
+        exp: "El <b>argumentativo</b> busca influir en la opinión del receptor usando razones."
+      },
+      {
+        q: "Una novela que cuenta una historia ordenada en el tiempo es:",
+        opts: ["Narrativo","Descriptivo","Explicativo","Argumentativo"],
+        correct: 0,
+        exp: "El texto <b>narrativo</b> presenta hechos ordenados cronológicamente."
+      },
+      {
+        q: "La víctima de un robo describe al ladrón a la policía. Está usando un texto:",
+        opts: ["Narrativo","Dialógico","Descriptivo","Argumentativo"],
+        correct: 2,
+        exp: "El texto <b>descriptivo</b> enumera detalles y características de algo o alguien."
+      },
+      {
+        q: "¿Cuál es la segunda fase (la más importante) de la lectura activa?",
+        opts: ["Pre-lectura","Lectura crítica del texto","Post-lectura","Repaso final"],
+        correct: 1,
+        exp: "La <b>lectura crítica</b> es donde analizas, subrayas y entiendes el texto. Las tres fases son: 1) Pre-lectura, 2) Lectura crítica, 3) Post-lectura."
+      }
+    ]
+  },
+  {
+    title: "Nivel 4 · Comprensión Lectora — 'Las tardes de enero' ❄️",
+    sub: "Poema de Juan Ramón Jiménez. Lee con atención y responde.",
+    type: "quiz",
+    passage: "«Va cayendo la noche: la bruma ha bajado a los montes el cielo; una lluvia menuda y monótona humedece los árboles secos… ¡Cómo cae la bruma en el alma! ¡Qué tristeza de vagos misterios en sus nieblas heladas esconden esas tardes sin sol ni luceros! En las tardes de rosas y brisas los dolores se olvidan, riendo, y las penas glaciales se ocultan tras los ojos radiantes de fuego…»",
+    questions: [
+      {
+        q: "¿A qué mes se refiere el poema?",
+        opts: ["Julio","Enero","Marzo","Diciembre"],
+        correct: 1,
+        exp: "El título lo dice: <b>Enero</b>. En el hemisferio norte es un mes de invierno, frío y bruma."
+      },
+      {
+        q: "La bruma cae en los montes y también en…",
+        opts: ["los ríos","el alma","las ciudades","los jardines del rey"],
+        correct: 1,
+        exp: "El poema dice: <b>'¡Cómo cae la bruma en el alma!'</b>. Es una metáfora de la tristeza que invade a las personas."
+      },
+      {
+        q: "¿Qué sentimiento predomina en el texto?",
+        opts: ["Alegría","Esperanza","Tristeza y nostalgia","Miedo"],
+        correct: 2,
+        exp: "Todo el poema habla de bruma, frío, almas marchitas y nostalgia: domina la <b>tristeza melancólica</b>."
+      },
+      {
+        q: "Según el poema, ¿qué se oculta en 'las tardes de rosas y brisas'?",
+        opts: ["Los ladrones y lobos","Los dolores y las penas","La bruma","Los jardines"],
+        correct: 1,
+        exp: "Dice: 'los dolores se olvidan, riendo, y las penas glaciales se ocultan tras los ojos radiantes de fuego'. Las <b>tardes alegres esconden las penas</b>."
+      },
+      {
+        q: "¿Con qué estación del año relacionarías un estado de esperanza y alegría?",
+        opts: ["Invierno","Primavera","Otoño","Ninguna"],
+        correct: 1,
+        exp: "La <b>primavera</b> simboliza renacer, flores, vida nueva → esperanza y alegría. El invierno del poema representa tristeza."
+      }
+    ]
+  },
+  {
+    title: "Nivel 5 · Idea Principal e Idea Secundaria 🎯",
+    sub: "Fragmento de 'Los tres mosqueteros' de Alejandro Dumas.",
+    type: "quiz",
+    passage: "«Los mosqueteros del rey eran un grupo que nadie sino Tréville podía disciplinar. Su residencia siempre estaba frecuentada por ellos. El día en que D'Artagnan llegó a ella, se encontró a muchos mosqueteros que se interpelaban y jugaban. En la escalera, se cruzó con cuatro que se ejercitaban espada en mano… observó a un mosquetero de gran talla que no iba vestido con la casaca de uniforme sino con un jubón azul celeste…»",
+    questions: [
+      {
+        q: "¿Cuál es la IDEA PRINCIPAL del fragmento?",
+        opts: [
+          "Un mosquetero usaba un jubón azul celeste.",
+          "La llegada de D'Artagnan a la residencia indisciplinada de los mosqueteros del rey.",
+          "Los mosqueteros se peleaban en las escaleras.",
+          "Tréville era el capitán de los mosqueteros."
+        ],
+        correct: 1,
+        exp: "La <b>idea principal</b> es aquella de la que trata todo el texto. Aquí, se centra en <b>la llegada de D'Artagnan y el ambiente caótico de los mosqueteros</b>."
+      },
+      {
+        q: "¿Cuál de las siguientes es una IDEA SECUNDARIA?",
+        opts: [
+          "D'Artagnan llega a la residencia de los mosqueteros.",
+          "En la antecámara se contaban historias cortesanas.",
+          "Los mosqueteros eran indisciplinados.",
+          "Había mosqueteros en la residencia."
+        ],
+        correct: 1,
+        exp: "Las <b>ideas secundarias</b> son detalles que apoyan la principal. 'En la antecámara se contaban historias cortesanas' es un <b>detalle</b> que enriquece pero no es el tema central."
+      },
+      {
+        q: "¿Cómo se describe al mosquetero del jubón azul celeste?",
+        opts: [
+          "Pequeño y nervioso",
+          "De gran talla, presumido, con tahalí bordado en oro",
+          "Silencioso y humilde",
+          "Vestido con uniforme oficial"
+        ],
+        correct: 1,
+        exp: "El texto lo describe: <b>'de gran talla'</b>, con jubón azul, tahalí bordado en oro, capa de terciopelo, y se retorcía el bigote mientras todos admiraban su banda → muy <b>presumido</b>."
+      }
+    ]
+  },
+  {
+    title: "Nivel 6 · Texto Informativo y Noticia 📰",
+    sub: "Entrevista de UNICEF Chile a Fernanda Yañez.",
+    type: "quiz",
+    questions: [
+      {
+        q: "¿Cuál es la característica fundamental de una noticia?",
+        opts: ["La opinión del autor","La objetividad","El humor","La invención creativa"],
+        correct: 1,
+        exp: "La noticia debe ser <b>objetiva y veraz</b>. El redactor no debe inventar ni exagerar."
+      },
+      {
+        q: "En un texto informativo NO debe haber:",
+        opts: ["Datos","Fechas","Opiniones personales del autor","Información concreta"],
+        correct: 2,
+        exp: "Los textos informativos son como los expositivos: <b>no tienen cabida las opiniones ni posturas personales</b>."
+      },
+      {
+        q: "¿Qué apartado cita las fuentes de donde se tomó la información?",
+        opts: ["Notas","Título","Bibliografía","Introducción"],
+        correct: 2,
+        exp: "La <b>bibliografía</b> muestra las fuentes y referencias. Las 'notas' dan información complementaria."
+      },
+      {
+        q: "Según Fernanda, ¿por qué son importantes los libros?",
+        opts: [
+          "Porque son caros",
+          "Porque ayudan a aumentar la imaginación, el vocabulario y 'culturizarnos'",
+          "Porque los exige el colegio",
+          "Porque se regalan"
+        ],
+        correct: 1,
+        exp: "El texto dice claramente: Fernanda piensa que los libros ayudan a <b>aumentar la imaginación, el vocabulario y 'culturizarnos'</b>."
+      },
+      {
+        q: "¿Qué proyecto lector menciona la noticia?",
+        opts: ["'Lee conmigo'","'Comparte tu Libro'","'Harry Potter Club'","'CONCAUSA Chile'"],
+        correct: 1,
+        exp: "El proyecto se llama <b>'Comparte tu Libro'</b>, una comunidad donde los estudiantes intercambian lecturas."
+      }
+    ]
+  }
+];
+
+// ============ RENDER ============
+const main = document.getElementById('main');
+
+function updateHUD() {
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('level').textContent = Math.min(state.level + 1, levels.length);
+  const pct = state.total > 0 ? (state.answered / state.total) * 100 : 0;
+  document.getElementById('progress').style.width = pct + '%';
+}
+
+function addBadge(text) {
+  state.badges.push(text);
+  const bar = document.getElementById('badges');
+  const b = document.createElement('div');
+  b.className = 'badge';
+  b.textContent = '🏅 ' + text;
+  bar.appendChild(b);
+}
+
+function renderLevel() {
+  const lvl = levels[state.level];
+  if (!lvl) return renderFinal();
+  main.innerHTML = '';
+  const h2 = document.createElement('h2');
+  h2.className = 'level-title';
+  h2.innerHTML = lvl.title;
+  main.appendChild(h2);
+  const sub = document.createElement('p');
+  sub.className = 'level-sub';
+  sub.textContent = lvl.sub;
+  main.appendChild(sub);
+
+  if (lvl.type === 'classify') {
+    renderClassify(lvl);
+  } else if (lvl.type === 'quiz') {
+    renderQuiz(lvl);
+  }
+  updateHUD();
+}
+
+// -------- QUIZ ----------
+function renderQuiz(lvl) {
+  if (lvl.passage) {
+    const p = document.createElement('div');
+    p.className = 'passage';
+    p.textContent = lvl.passage;
+    main.appendChild(p);
+  }
+  let qIdx = 0;
+  let correctInLevel = 0;
+  state.total += lvl.questions.length;
+
+  function showQ() {
+    const q = lvl.questions[qIdx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `<div class="question"><b>Pregunta ${qIdx+1}/${lvl.questions.length}:</b> ${q.q}</div>`;
+    const opts = document.createElement('div');
+    opts.className = 'options';
+    q.opts.forEach((o, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.textContent = o;
+      btn.onclick = () => {
+        Array.from(opts.children).forEach(b => b.disabled = true);
+        const fb = document.createElement('div');
+        fb.className = 'feedback show';
+        if (i === q.correct) {
+          btn.classList.add('correct');
+          fb.classList.add('ok');
+          fb.innerHTML = '✅ <b>¡Correcto!</b> ' + q.exp;
+          state.score += 10;
+          correctInLevel++;
+        } else {
+          btn.classList.add('wrong');
+          opts.children[q.correct].classList.add('correct');
+          fb.classList.add('bad');
+          fb.innerHTML = '❌ <b>No es esa.</b> ' + q.exp;
+          state.score += 2;
+        }
+        state.answered++;
+        wrap.appendChild(fb);
+        const next = document.createElement('button');
+        next.className = 'btn';
+        next.textContent = (qIdx === lvl.questions.length - 1) ? 'Finalizar nivel ➡️' : 'Siguiente pregunta ➡️';
+        next.onclick = () => {
+          qIdx++;
+          main.removeChild(wrap);
+          if (qIdx >= lvl.questions.length) {
+            finishLevel(lvl, correctInLevel);
+          } else {
+            showQ();
+          }
+        };
+        wrap.appendChild(next);
+        updateHUD();
+      };
+      opts.appendChild(btn);
+    });
+    wrap.appendChild(opts);
+    main.appendChild(wrap);
+  }
+  showQ();
+}
+
+function finishLevel(lvl, correct) {
+  const total = lvl.questions ? lvl.questions.length : lvl.words.length;
+  const pct = correct / total;
+  if (pct === 1) addBadge(lvl.title.split('·')[0].trim() + ' perfecto');
+  else if (pct >= 0.7) addBadge(lvl.title.split('·')[0].trim() + ' aprobado');
+
+  const msg = document.createElement('div');
+  msg.style.textAlign = 'center';
+  msg.style.padding = '20px';
+  const emoji = pct === 1 ? '🎉' : pct >= 0.7 ? '👏' : '💪';
+  msg.innerHTML = `<h2>${emoji} Nivel terminado</h2>
+    <p>Aciertos: <b>${correct}/${total}</b></p>
+    <p style="color:#666">${pct === 1 ? '¡Dominio total! Sigue así.' : pct >= 0.7 ? '¡Muy bien! Casi perfecto.' : 'Repasa el contenido y sigue adelante.'}</p>`;
+  const next = document.createElement('button');
+  next.className = 'btn';
+  next.textContent = (state.level === levels.length - 1) ? 'Ver resultado final 🏆' : 'Siguiente nivel ➡️';
+  next.onclick = () => { state.level++; renderLevel(); };
+  msg.appendChild(next);
+  main.appendChild(msg);
+}
+
+// Fisher-Yates shuffle
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// -------- CLASSIFY ----------
+function renderClassify(lvl) {
+  state.total += lvl.words.length;
+  const intro = document.createElement('p');
+  intro.innerHTML = '<i>' + lvl.intro + '</i>';
+  main.appendChild(intro);
+
+  const hint = document.createElement('div');
+  hint.className = 'hint';
+  hint.innerHTML = '💡 <b>Cómo jugar:</b> Toca una palabra (se pondrá activa con borde azul) y luego toca la caja de la categoría correcta. Hay <b>6 categorías</b> y <b>' + lvl.words.length + ' palabras</b>.';
+  main.appendChild(hint);
+
+  const area = document.createElement('div');
+  area.className = 'drag-area';
+  let active = null;
+  let correctCount = 0;
+  let placed = 0;
+  const chips = [];
+  const shuffledWords = shuffle(lvl.words);
+  shuffledWords.forEach((item, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = item.w;
+    chip.dataset.cat = item.cat;
+    chip.onclick = () => {
+      if (chip.classList.contains('placed')) return;
+      chips.forEach(c => c.style.outline = '');
+      active = chip;
+      chip.style.outline = '3px solid #2575fc';
+    };
+    chips.push(chip);
+    area.appendChild(chip);
+  });
+  main.appendChild(area);
+
+  const bins = document.createElement('div');
+  bins.className = 'bins';
+  shuffle(lvl.bins).forEach(cat => {
+    const bin = document.createElement('div');
+    bin.className = 'bin';
+    bin.innerHTML = `<h4>${cat}</h4><div class="dropped"></div>`;
+    bin.onclick = () => {
+      if (!active) return;
+      const correct = active.dataset.cat === cat;
+      const span = document.createElement('span');
+      span.textContent = active.textContent;
+      span.className = correct ? 'right' : 'wrong';
+      bin.querySelector('.dropped').appendChild(span);
+      active.classList.add('placed');
+      active.style.outline = '';
+      state.answered++;
+      placed++;
+      if (correct) { state.score += 10; correctCount++; }
+      else { state.score += 2; }
+      active = null;
+      updateHUD();
+      if (placed === lvl.words.length) {
+        const exp = document.createElement('div');
+        exp.className = 'feedback ok show';
+        exp.innerHTML = '📘 <b>Aprendiste:</b> ' + lvl.explanation;
+        main.appendChild(exp);
+        const next = document.createElement('button');
+        next.className = 'btn';
+        next.textContent = 'Siguiente nivel ➡️';
+        next.onclick = () => {
+          if (correctCount === lvl.words.length) addBadge('Clases de palabras perfecto');
+          else if (correctCount >= lvl.words.length * 0.7) addBadge('Clases de palabras aprobado');
+          state.level++; renderLevel();
+        };
+        main.appendChild(next);
+      }
+    };
+    bins.appendChild(bin);
+  });
+  main.appendChild(bins);
+}
+
+// -------- FINAL ----------
+function renderFinal() {
+  const maxScore = state.total * 10;
+  const pct = Math.round((state.score / maxScore) * 100);
+  let rank = '';
+  if (pct >= 90) rank = '🌟 ¡MAESTRA DEL CASTELLANO! 🌟';
+  else if (pct >= 75) rank = '🎓 Excelente estudiante';
+  else if (pct >= 60) rank = '👍 Buen trabajo';
+  else rank = '📚 ¡Sigue practicando, lo lograrás!';
+
+  main.innerHTML = `
+    <div class="final">
+      <h2>🏆 ¡Juego completado!</h2>
+      <div class="score">${state.score} pts</div>
+      <p>de un máximo de ${maxScore} (${pct}%)</p>
+      <h3>${rank}</h3>
+      <p style="margin-top:20px;color:#666">Insignias ganadas: <b>${state.badges.length}</b></p>
+      <button class="btn" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    </div>
+  `;
+  updateHUD();
+}
+
+// start
+renderLevel();
+</script>
+</body>
+</html>

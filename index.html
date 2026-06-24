@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juegos de Repaso — Mía Sabrina</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #fff;
+    }
+    header { text-align: center; margin-bottom: 36px; }
+    h1 {
+      font-size: clamp(28px, 5vw, 46px);
+      font-weight: 800;
+      text-shadow: 0 2px 8px rgba(0,0,0,.25);
+      letter-spacing: .5px;
+    }
+    .subtitle {
+      margin-top: 10px;
+      font-size: clamp(15px, 2.5vw, 19px);
+      opacity: .92;
+      font-weight: 400;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 720px;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: rgba(255,255,255,.95);
+      color: #2b2b40;
+      text-decoration: none;
+      padding: 30px 18px;
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.18);
+      transition: transform .15s ease, box-shadow .15s ease;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .card:hover, .card:focus {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 30px rgba(0,0,0,.28);
+      outline: none;
+    }
+    .emoji { font-size: 46px; line-height: 1; }
+    footer { margin-top: 38px; font-size: 14px; opacity: .8; text-align: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Juegos de Repaso</h1>
+    <div class="subtitle">Mía Sabrina ✨</div>
+  </header>
+
+  <main class="grid">
+    <a class="card" href="castellano.html"><span class="emoji">📖</span>Castellano</a>
+    <a class="card" href="ciencias.html"><span class="emoji">🔬</span>Ciencias</a>
+    <a class="card" href="geografia.html"><span class="emoji">🌍</span>Geografía</a>
+    <a class="card" href="historia.html"><span class="emoji">🏛️</span>Historia</a>
+    <a class="card" href="ingles.html"><span class="emoji">🇬🇧</span>Inglés</a>
+    <a class="card" href="matematicas.html"><span class="emoji">🔢</span>Matemáticas</a>
+  </main>
+
+  <footer>Elige una materia para empezar a repasar 🎯</footer>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reto Matemático — Mía Sabrina · 1er Año</title>
+<style>
+  :root{
+    --bg1:#1b1f3b; --bg2:#2d1b4e; --card:#ffffff; --ink:#23264a;
+    --pri:#6c4cf0; --pri2:#9a6bff; --teal:#15c2b8; --amber:#ffb627;
+    --good:#1eae74; --bad:#e0556b; --soft:#f0ecff; --line:#e4def7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:14px;
+  }
+  .wrap{width:100%;max-width:680px}
+  /* HUD */
+  .hud{
+    background:rgba(255,255,255,.12);backdrop-filter:blur(6px);
+    border-radius:16px;padding:10px 14px;margin-bottom:12px;color:#fff;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    border:1px solid rgba(255,255,255,.18);
+  }
+  .hud .mod{font-weight:700;font-size:.92rem;flex:1;min-width:140px}
+  .hud .stat{font-size:.85rem;background:rgba(0,0,0,.22);padding:4px 10px;border-radius:20px;white-space:nowrap}
+  .hearts{letter-spacing:1px;font-size:.95rem}
+  .bar{height:9px;border-radius:6px;background:rgba(255,255,255,.22);overflow:hidden;width:100%;margin-top:6px}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--amber));transition:width .4s ease}
+  /* card */
+  .card{background:var(--card);border-radius:22px;padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+  h1{font-size:1.5rem;margin-bottom:4px;color:var(--pri)}
+  .sub{color:#6b6f97;font-size:.95rem;margin-bottom:14px}
+  .pill{display:inline-block;background:var(--soft);color:var(--pri);font-weight:700;
+        padding:5px 12px;border-radius:20px;font-size:.8rem;margin-bottom:12px}
+  .q{font-size:1.12rem;line-height:1.55;margin:6px 0 16px;font-weight:600}
+  .help{font-size:.86rem;color:#7a7fa6;margin-bottom:12px;background:#faf8ff;border-left:3px solid var(--pri2);padding:8px 12px;border-radius:8px}
+  .opts{display:flex;flex-direction:column;gap:10px}
+  .opt{
+    border:2px solid var(--line);background:#fff;border-radius:14px;padding:13px 15px;
+    cursor:pointer;font-size:1.02rem;text-align:left;transition:.15s;display:flex;align-items:center;gap:10px;
+  }
+  .opt:hover{border-color:var(--pri2);background:#faf8ff}
+  .opt.sel{border-color:var(--pri);background:var(--soft)}
+  .opt.correct{border-color:var(--good);background:#e7faf0}
+  .opt.wrong{border-color:var(--bad);background:#fdecef}
+  .opt.disabled{pointer-events:none;opacity:.92}
+  .opt .tag{width:26px;height:26px;border-radius:8px;background:var(--soft);color:var(--pri);
+            display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex:0 0 auto}
+  .tf{display:flex;gap:12px}
+  .tf .opt{flex:1;justify-content:center;font-weight:700}
+  .fill input{width:100%;border:2px solid var(--line);border-radius:14px;padding:13px 15px;font-size:1.05rem;font-family:inherit}
+  .fill input:focus{outline:none;border-color:var(--pri)}
+  .order-pool,.order-target{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .order-target{min-height:8px}
+  .step{border:2px dashed var(--line);border-radius:12px;padding:11px 14px;cursor:pointer;background:#fff;font-size:.98rem}
+  .step:hover{border-color:var(--pri2)}
+  .step.placed{border-style:solid;border-color:var(--teal);background:#e9fbf9;cursor:default}
+  .order-target .step{border-style:solid;border-color:var(--pri2);background:#faf8ff}
+  /* feedback */
+  .fb{margin-top:14px;border-radius:14px;padding:13px 15px;font-size:.96rem;line-height:1.5;display:none}
+  .fb.show{display:block;animation:pop .25s ease}
+  .fb.ok{background:#e7faf0;border:1.5px solid var(--good)}
+  .fb.no{background:#fdecef;border:1.5px solid var(--bad)}
+  .fb b{display:block;margin-bottom:3px}
+  @keyframes pop{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+  .btn{
+    margin-top:16px;width:100%;border:none;border-radius:14px;padding:14px;font-size:1.05rem;font-weight:800;
+    color:#fff;background:linear-gradient(90deg,var(--pri),var(--pri2));cursor:pointer;letter-spacing:.3px;
+  }
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.ghost{background:#fff;color:var(--pri);border:2px solid var(--pri)}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 2px;line-height:1.05}
+  .frac > span:first-child{border-bottom:2px solid currentColor;padding:0 4px}
+  .frac > span:last-child{padding:0 4px}
+  sup{font-size:.72em}
+  /* start + modules grid */
+  .modlist{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  @media(max-width:480px){.modlist{grid-template-columns:1fr}}
+  .modtile{background:#faf8ff;border:1.5px solid var(--line);border-radius:14px;padding:12px;font-size:.9rem;display:flex;gap:9px;align-items:flex-start}
+  .modtile .ic{font-size:1.3rem}
+  .modtile b{display:block;color:var(--pri)}
+  /* badges */
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .badge{background:linear-gradient(135deg,var(--amber),#ff8a3d);color:#fff;border-radius:20px;
+         padding:6px 12px;font-size:.82rem;font-weight:700;box-shadow:0 4px 10px rgba(255,138,61,.35)}
+  .badge.lock{background:#eee;color:#aaa;box-shadow:none}
+  .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-120%);
+         background:#fff;border-radius:16px;padding:12px 18px;box-shadow:0 12px 30px rgba(0,0,0,.3);
+         font-weight:700;color:var(--pri);transition:.4s;z-index:50;border:2px solid var(--amber);text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  /* final */
+  .score-big{font-size:3rem;font-weight:900;color:var(--pri);text-align:center;line-height:1}
+  .ring{display:flex;justify-content:center;margin:6px 0 4px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .kpi{background:#faf8ff;border-radius:14px;padding:12px;text-align:center;border:1px solid var(--line)}
+  .kpi b{display:block;font-size:1.4rem;color:var(--pri)}
+  .kpi span{font-size:.78rem;color:#7a7fa6}
+  .reco{background:#fff8e8;border:1.5px solid var(--amber);border-radius:14px;padding:13px;font-size:.93rem;margin-top:6px}
+  .dad{background:linear-gradient(135deg,var(--teal),#0fa89f);color:#fff;border-radius:14px;padding:14px;text-align:center;font-weight:700;margin-top:12px}
+  .mini{font-size:.8rem;color:#8b8fb3;text-align:center;margin-top:14px}
+  ul.tips{margin:6px 0 0 18px;font-size:.9rem;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+  <div class="hud" id="hud" style="display:none">
+    <div class="mod" id="hudMod">Módulo</div>
+    <div class="stat">⭐ <span id="hudPts">0</span></div>
+    <div class="stat hearts" id="hudLives">❤️❤️❤️</div>
+    <div class="bar"><i id="hudBar"></i></div>
+  </div>
+  <div class="card" id="app"></div>
+</div>
+
+<script>
+/* ============ helpers de notación ============ */
+const F=(n,d)=>`<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+const P=(b,e)=>`${b}<sup>${e}</sup>`;        // base^exp
+const PF=(n,d,e)=>`(${F(n,d)})<sup>${e}</sup>`; // (n/d)^e
+
+/* ============ datos del juego ============ */
+const MODULES=[
+ {
+  id:1, name:"Módulo 1 · Números en transformación", icon:"🔢", badge:"Exploradora de números",
+  intro:"Fracciones, decimales y porcentajes. ¡A transformar números!",
+  qs:[
+   {type:"mc", q:`Convierte a decimal: ${F(77,1000)}`, opts:["0,77","0,077","7,7","0,0077"], correct:1,
+    fb:`El denominador 1000 tiene <b style="display:inline">3 ceros</b>, así que corremos la coma 3 lugares: 77 → 0,077. Verifica: 0,077 × 1000 = 77.`},
+   {type:"mc", q:`Convierte a decimal: ${F(342,10)}`, opts:["3,42","34,2","342,0","0,342"], correct:1,
+    fb:`El 10 tiene 1 cero → corremos la coma 1 lugar: 342 → 34,2.`},
+   {type:"mc", q:`¿Qué porcentaje equivale a ${F(4,5)}?`, help:`Pista: divide y luego multiplica por 100.`,
+    opts:["45 %","8 %","80 %","20 %"], correct:2,
+    fb:`4 ÷ 5 = 0,8 y 0,8 × 100 = <b style="display:inline">80 %</b>. Como falta ${F(1,5)} = 20 %, tiene sentido (80 % + 20 % = 100 %).`},
+   {type:"mc", q:`¿Qué porcentaje equivale a ${F(2,7)} (aprox.)?`, opts:["28,57 %","2,7 %","72 %","14 %"], correct:0,
+    fb:`2 ÷ 7 = 0,2857… y ×100 ≈ 28,57 %. Es un poco menos de un tercio (33,3 %).`},
+   {type:"tf", q:`Para pasar una fracción a porcentaje se multiplica por 100.`, correct:true,
+    fb:`Verdadero. Primero la fracción se hace decimal y luego se multiplica por 100 para obtener el %.`},
+   {type:"mc", q:`¿Cuál procedimiento para pasar ${F(3,4)} a decimal es el correcto?`,
+    opts:["3 + 4 = 7","3 × 4 = 12","3 ÷ 4 = 0,75","4 ÷ 3 = 1,33"], correct:2,
+    fb:`La barra de fracción significa división del numerador entre el denominador: 3 ÷ 4 = 0,75.`},
+   {type:"fill", q:`Completa el resultado: ${F(1,2)} en decimal = ____`, answers:["0,5","0.5",",5",".5"],
+    fb:`1 ÷ 2 = 0,5. Es la mitad de la unidad.`}
+  ]
+ },
+ {
+  id:2, name:"Módulo 2 · Enteros, m.c.m y m.c.d", icon:"🧮", badge:"Detective de divisibilidad",
+  intro:"Divisibilidad, signos y los problemas de cuerdas y vueltas.",
+  qs:[
+   {type:"mc", q:`Calcula el <b style="display:inline">m.c.d</b> de 54, 27 y 9.`,
+    help:`m.c.d = factores comunes con el menor exponente.`,
+    opts:["54","3","9","27"], correct:2,
+    fb:`54 = 2·3³, 27 = 3³, 9 = 3². El factor común con menor exponente es 3² = <b style="display:inline">9</b>.`},
+   {type:"mc", q:`Calcula el <b style="display:inline">m.c.m</b> de 4, 8 y 16.`,
+    opts:["16","32","512","4"], correct:0,
+    fb:`4 = 2², 8 = 2³, 16 = 2⁴. El mayor exponente es 2⁴ = <b style="display:inline">16</b> (16 ya es múltiplo de 4 y 8).`},
+   {type:"mc", q:`Jorge tiene 24 m de cuerda y Marcos 18 m. Quieren trozos iguales <b style="display:inline">lo más largos posible</b>. ¿Qué se usa?`,
+    opts:["m.c.m","m.c.d","La suma","El promedio"], correct:1,
+    fb:`"Lo más largos posible" e iguales → <b style="display:inline">m.c.d</b>. m.c.d(24,18) = 6 m por trozo.`},
+   {type:"mc", q:`Con trozos de 6 m, ¿cuántos trozos hace Jorge (cuerda de 24 m)?`,
+    opts:["3","4","6","2"], correct:1,
+    fb:`24 ÷ 6 = 4 trozos. (Marcos: 18 ÷ 6 = 3 trozos.)`},
+   {type:"mc", q:`Isabel tarda 24 min por vuelta y Juan 16 min. ¿Cuándo coinciden por primera vez? Se usa…`,
+    opts:["m.c.d","m.c.m","La resta","La división"], correct:1,
+    fb:`"Cuándo vuelven a coincidir" → <b style="display:inline">m.c.m</b>. m.c.m(24,16) = 48 min (Isabel 2 vueltas, Juan 3).`},
+   {type:"mc", q:`Aplica la propiedad distributiva: 3 · (12 + 5) =`,
+    opts:["36","51","20","45"], correct:1,
+    fb:`3·12 + 3·5 = 36 + 15 = 51. (Comprobación: 3·17 = 51.)`},
+   {type:"mc", q:`Resuelve: 4 · (5 − 10) =`,
+    opts:["−20","20","−5","−40"], correct:0,
+    fb:`4·5 − 4·10 = 20 − 40 = −20. ¡Cuidado con el signo!`},
+   {type:"mc", q:`Resuelve la operación combinada: {2 − 59 − [4 + (5 − 15 + 23) − 42] + 35}`,
+    help:`De adentro hacia afuera: ( ), [ ], { }.`,
+    opts:["3","−3","13","−25"], correct:0,
+    fb:`(5−15+23)=13 → [4+13−42]=−25 → {2−59−(−25)+35} = 2−59+25+35 = <b style="display:inline">3</b>.`}
+  ]
+ },
+ {
+  id:3, name:"Módulo 3 · Fracciones y operaciones en Q", icon:"➗", badge:"Experta en fracciones",
+  intro:"Equivalentes, irreducibles, mixtos y las cuatro operaciones.",
+  qs:[
+   {type:"tf", q:`¿Son equivalentes? ${F(9,3)} y 3`, correct:true,
+    fb:`Verdadero: ${F(9,3)} = 3, así que son iguales (signo =).`},
+   {type:"tf", q:`¿Son equivalentes? ${F(1,5)} y ${F(8,9)}`, correct:false,
+    fb:`Falso. Multiplicación cruzada: 1·9 = 9 y 5·8 = 40. Como 9 ≠ 40, no son equivalentes (signo ≠).`},
+   {type:"mc", q:`Escribe como fracción impropia: 4 ${F(2,3)}`,
+    help:`(entero × denominador) + numerador, sobre el mismo denominador.`,
+    opts:[F(8,3),F(14,3),F(6,3),F(12,3)], correct:1,
+    fb:`(4×3) + 2 = 14, sobre 3 → ${F(14,3)}.`},
+   {type:"mc", q:`Halla la fracción irreducible de ${F(24,16)}.`,
+    opts:[F(12,8),F(6,4),F(3,2),F(8,16)], correct:2,
+    fb:`m.c.d(24,16) = 8 → 24÷8 = 3 y 16÷8 = 2 → ${F(3,2)}. Hay que simplificar hasta el final.`},
+   {type:"mc", q:`Resuelve: ${F(12,5)} + ${F(3,8)}`,
+    help:`m.c.m(5,8) = 40.`,
+    opts:[F(15,13),F(111,40),F(36,40),F(96,40)], correct:1,
+    fb:`${F(12,5)} = ${F(96,40)} y ${F(3,8)} = ${F(15,40)}. Suma: ${F(111,40)}.`},
+   {type:"mc", q:`Resuelve: 1 ${F(3,5)} − ${F(2,5)}`,
+    opts:[F(6,5),F(1,5),F(5,5),F(8,5)], correct:0,
+    fb:`1 ${F(3,5)} = ${F(8,5)}. Luego ${F(8,5)} − ${F(2,5)} = ${F(6,5)}.`},
+   {type:"mc", q:`Resuelve: ${F(3,4)} ÷ 5`,
+    help:`Dividir = multiplicar por el inverso.`,
+    opts:[F(15,4),F(3,20),F(3,9),F(12,5)], correct:1,
+    fb:`${F(3,4)} ÷ 5 = ${F(3,4)} · ${F(1,5)} = ${F(3,20)}. Se invierte la que divide (el 5).`},
+   {type:"mc", q:`Resuelve: 2 ${F(4,5)} · ${F(1,8)}`,
+    opts:[F(7,20),F(14,40),F(3,13),F(7,40)], correct:0,
+    fb:`2 ${F(4,5)} = ${F(14,5)}. Multiplico recto: ${F(14,40)} y simplifico ÷2 = ${F(7,20)}.`},
+   {type:"mc", q:`En ${F(2,5)} + ${F(3,7)} ÷ ${F(1,2)} − ${F(2,5)}, ¿qué se hace PRIMERO?`,
+    opts:["La suma","La resta","La división","De izquierda a derecha"], correct:2,
+    fb:`La jerarquía manda: primero la división. ${F(3,7)} ÷ ${F(1,2)} = ${F(6,7)}.`},
+   {type:"mc", q:`Resultado de ${F(2,5)} + ${F(3,7)} ÷ ${F(1,2)} − ${F(2,5)} =`,
+    opts:[F(6,7),F(4,5),"0",F(3,7)], correct:0,
+    fb:`Tras la división queda ${F(2,5)} + ${F(6,7)} − ${F(2,5)}; como ${F(2,5)} − ${F(2,5)} = 0, resultado = ${F(6,7)}.`}
+  ]
+ },
+ {
+  id:4, name:"Módulo 4 · Ecuaciones", icon:"⚖️", badge:"Maestra de ecuaciones",
+  intro:"Despejar la x paso a paso y comprobar.",
+  qs:[
+   {type:"mc", q:`En ${F("3x",2)} + 5 = 7, ¿cuál es el SIGUIENTE paso correcto?`,
+    opts:[`${F("3x",2)} = 12`,`${F("3x",2)} = 2`,`3x = 7`,`${F("3x",2)} = 7 + 5`], correct:1,
+    fb:`El 5 pasa restando: ${F("3x",2)} = 7 − 5 = 2.`},
+   {type:"mc", q:`Resuelve ${F("3x",2)} + 5 = 7. x =`,
+    opts:[F(4,3),"4","2",F(2,3)], correct:0,
+    fb:`${F("3x",2)} = 2 → 3x = 4 → x = ${F(4,3)}. Comprobación: 3(4/3)/2 + 5 = 2 + 5 = 7. ✔`},
+   {type:"mc", q:`Resuelve 5x − 9 = x − 4. x =`,
+    opts:[F(5,4),"5","−5",F(4,5)], correct:0,
+    fb:`5x − x = −4 + 9 → 4x = 5 → x = ${F(5,4)}.`},
+   {type:"mc", q:`Resuelve 3 · (x + 8) = 2x + 4. x =`,
+    help:`Primero distribuye el 3.`,
+    opts:["20","−20","−28","4"], correct:1,
+    fb:`3x + 24 = 2x + 4 → 3x − 2x = 4 − 24 → x = −20. Comprobación: 3(−12) = −36 = 2(−20)+4. ✔`},
+   {type:"order", q:`Ordena los pasos para resolver 5x − 9 = x − 4:`,
+    steps:["Agrupo: 5x − x = −4 + 9","Sumo: 4x = 5","Divido entre 4","x = 5/4"],
+    fb:`Se juntan las x a un lado y los números al otro, se reduce y se divide para despejar x.`},
+   {type:"mc", q:`En ${F("x",4)} − ${F("(2x+3)",6)} = ${F(4,8)}, el error más común es…`,
+    opts:["No igualar denominadores","No distribuir el signo menos en −(2x+3)","Sumar las x","Olvidar el =5"], correct:1,
+    fb:`−(2x + 3) se convierte en −2x − 3 (el menos afecta a TODO el paréntesis). El resultado correcto es x = −12.`},
+   {type:"tf", q:`Si x = −20, entonces en 3·(x+8) = 2x+4 ambos lados valen −36.`, correct:true,
+    fb:`Verdadero: 3(−20+8) = −36 y 2(−20)+4 = −36. Sustituir es la mejor forma de verificar.`}
+  ]
+ },
+ {
+  id:5, name:"Módulo 5 · Potenciación en Q", icon:"⚡", badge:"Domadora de potencias",
+  intro:"Propiedades de las potencias: sumar, restar y multiplicar exponentes.",
+  qs:[
+   {type:"mc", q:`En ${PF(2,3,3)} · ${PF(2,3,2)}, ¿qué propiedad se usa?`,
+    opts:["Se multiplican los exponentes","Se suman los exponentes","Se restan los exponentes","El exponente es 0"], correct:1,
+    fb:`Producto de potencias de igual base → se SUMAN los exponentes: 3 + 2 = 5 → ${PF(2,3,5)}.`},
+   {type:"mc", q:`Simplifica: ${PF(2,3,3)} · ${PF(2,3,2)} · ${PF(2,3,14)} · ${PF(2,3,"-8")}`,
+    opts:[PF(2,3,11),PF(2,3,672),PF(2,3,"-8"),PF(2,3,27)], correct:0,
+    fb:`Misma base: 3 + 2 + 14 + (−8) = 11 → ${PF(2,3,11)}.`},
+   {type:"mc", q:`Resuelve: ${PF(6,5,3)} ÷ ${PF(6,5,7)}`,
+    help:`Cociente de igual base → se RESTAN los exponentes.`,
+    opts:[PF(6,5,10),PF(6,5,"-4"),PF(6,5,21),PF(6,5,4)], correct:1,
+    fb:`3 − 7 = −4 → ${PF(6,5,"-4")} (que también es ${PF(5,6,4)}).`},
+   {type:"mc", q:`¿Cuánto vale ${PF(3,4,0)}?`,
+    opts:["0",F(3,4),"1",F(4,3)], correct:2,
+    fb:`Todo número (distinto de 0) elevado a 0 es 1.`},
+   {type:"tf", q:`Es cierto que ${PF("-3",4,2)} = ${PF(3,4,2)}.`, correct:true,
+    fb:`Verdadero: un número negativo elevado a exponente PAR da positivo.`},
+   {type:"mc", q:`¿Cuánto vale ${PF(1,2,"-3")}?`,
+    opts:["8",F(1,8),"−8","6"], correct:0,
+    fb:`Exponente negativo invierte la base: ${PF(1,2,"-3")} = 2³ = 8.`},
+   {type:"mc", q:`En [${PF(3,8,3)} · ${PF(4,5,2)}]⁵, el exponente 5 de afuera se debe…`,
+    opts:["Sumar a cada exponente","Multiplicar por cada exponente","Restar","Ignorar"], correct:1,
+    fb:`Potencia de una potencia → se MULTIPLICAN: ${PF(3,8,"3·5")} · ${PF(4,5,"2·5")} = ${PF(3,8,15)} · ${PF(4,5,10)}.`}
+  ]
+ },
+ {
+  id:6, name:"Módulo 6 · Geometría visual", icon:"📐", badge:"Arquitecta de geometría",
+  intro:"Perímetro, área, volumen y simetría.",
+  qs:[
+   {type:"mc", q:`Perímetro de un triángulo equilátero de lado 2 cm:`,
+    help:`Equilátero = 3 lados iguales.`,
+    opts:["2 cm","4 cm","6 cm","8 cm"], correct:2,
+    fb:`P = 3 × 2 = 6 cm.`},
+   {type:"mc", q:`Perímetro de un paralelogramo de lados 373 cm y 196 cm:`,
+    opts:["569 cm","1138 cm","746 cm","392 cm"], correct:1,
+    fb:`P = 2 × (373 + 196) = 2 × 569 = 1138 cm (dos pares de lados iguales).`},
+   {type:"mc", q:`¿Cuál es la fórmula del área de un triángulo?`,
+    opts:["base × altura","(base × altura) ÷ 2","lado × lado","2 × (base + altura)"], correct:1,
+    fb:`Área del triángulo = (base × altura) ÷ 2.`},
+   {type:"mc", q:`Área de un círculo de radio 7 cm (π ≈ 3,14):`,
+    opts:["≈ 153,9 cm²","≈ 43,96 cm²","49 cm²","≈ 21,98 cm²"], correct:0,
+    fb:`A = π × r² = 3,14 × 7² = 3,14 × 49 ≈ 153,9 cm². ¡Usa el radio, no el diámetro!`},
+   {type:"mc", q:`Área de un cuadrado de lado 8 cm:`,
+    opts:["32 cm²","16 cm²","64 cm²","24 cm²"], correct:2,
+    fb:`A = lado² = 8 × 8 = 64 cm².`},
+   {type:"mc", q:`Volumen de un cubo de lado 6 cm:`,
+    opts:["36 cm³","216 cm³","18 cm³","666 cm³"], correct:1,
+    fb:`V = lado³ = 6 × 6 × 6 = 216 cm³.`},
+   {type:"mc", q:`Volumen de un prisma de 16 × 9 × 4 cm:`,
+    opts:["576 cm³","144 cm³","29 cm³","288 cm³"], correct:0,
+    fb:`V = largo × ancho × alto = 16 × 9 × 4 = 576 cm³.`},
+   {type:"mc", q:`¿En qué unidades se mide el VOLUMEN?`,
+    opts:["cm (lineales)","cm² (cuadradas)","cm³ (cúbicas)","sin unidad"], correct:2,
+    fb:`El volumen ocupa espacio en 3 dimensiones → unidades cúbicas (cm³).`},
+   {type:"mc", q:`Al reflejar una figura por un eje de simetría vertical, cada punto…`,
+    opts:["Cambia de altura","Queda a la misma distancia del eje pero al lado contrario","Desaparece","Se hace más grande"], correct:1,
+    fb:`La reflexión es como un espejo: misma distancia al eje, lado contrario, misma altura.`},
+   {type:"mc", q:`Piso en forma de L con área 18 pies². Si cada mosaico cubre 1,5 pies², ¿cuántos mosaicos se necesitan?`,
+    help:`Mosaicos = área ÷ área de cada hoja.`,
+    opts:["9","12","27","6"], correct:1,
+    fb:`18 ÷ 1,5 = 12 hojas. (El área de la L se obtiene dividiéndola en dos rectángulos: 12 + 6 = 18.)`}
+  ]
+ },
+ {
+  id:7, name:"Módulo 7 · Estadística", icon:"📊", badge:"Analista de datos",
+  intro:"Tablas de frecuencia y medidas de tendencia central.",
+  qs:[
+   {type:"mc", q:`Calificaciones: 13,10,15,10,13,12,20,18,18,20,20,15,13. ¿Cuál es la MEDIA (aprox.)?`,
+    help:`Media = suma de todos ÷ cantidad.`,
+    opts:["13","15,15","20","18"], correct:1,
+    fb:`Suma = 197 y hay 13 datos → 197 ÷ 13 ≈ 15,15.`},
+   {type:"mc", q:`Con esos mismos datos ordenados, ¿cuál es la MEDIANA?`,
+    opts:["13","15","18","20"], correct:1,
+    fb:`Ordenados, el valor del medio (7° de 13) es 15.`},
+   {type:"mc", q:`¿Cuál es la MODA de esos datos?`,
+    help:`La moda es el valor que más se repite.`,
+    opts:["Solo 13","Solo 20","13 y 20 (bimodal)","15"], correct:2,
+    fb:`El 13 y el 20 aparecen 3 veces cada uno → distribución bimodal (dos modas).`},
+   {type:"mc", q:`Niños nacidos: L15, M10, X25, J30, V5, S35, D20. ¿Cuál es el TOTAL?`,
+    opts:["120","140","100","160"], correct:1,
+    fb:`15+10+25+30+5+35+20 = 140 niños.`},
+   {type:"mc", q:`Con un total de 140 en 7 días, ¿cuál es el PROMEDIO por día?`,
+    opts:["14","20","28","10"], correct:1,
+    fb:`140 ÷ 7 = 20 niños por día.`},
+   {type:"mc", q:`¿En qué día nacieron MÁS niños?`,
+    opts:["Jueves (30)","Sábado (35)","Miércoles (25)","Domingo (20)"], correct:1,
+    fb:`El sábado, con 35 niños (el viernes fue el menor, con 5).`},
+   {type:"mc", q:`Frecuencia ACUMULADA hasta el miércoles (L15, M10, X25):`,
+    help:`La acumulada se va sumando.`,
+    opts:["25","50","35","140"], correct:1,
+    fb:`15 + 10 + 25 = 50. La frecuencia acumulada suma la de los días anteriores.`},
+   {type:"tf", q:`La frecuencia acumulada se calcula sumando las frecuencias una tras otra.`, correct:true,
+    fb:`Verdadero: 15, 25 (15+10), 50 (25+25)… cada valor incluye los anteriores.`}
+  ]
+ },
+ {
+  id:8, name:"Reto final · Cierre matemático", icon:"🏆", badge:"Campeona del repaso",
+  intro:"Mezcla de TODO lo aprendido. ¡Demuestra lo que sabes!",
+  qs:[
+   {type:"mc", q:`${F(342,10)} en decimal =`, opts:["3,42","34,2","0,342","342"], correct:1,
+    fb:`Un cero en el 10 → corre la coma 1 lugar: 34,2.`},
+   {type:"mc", q:`m.c.m de 4, 8 y 16 =`, opts:["16","8","64","32"], correct:0,
+    fb:`El mayor exponente de 2: 2⁴ = 16.`},
+   {type:"mc", q:`Fracción irreducible de ${F(24,16)} =`, opts:[F(3,2),F(6,4),F(12,8),F(4,3)], correct:0,
+    fb:`÷8 arriba y abajo: ${F(3,2)}.`},
+   {type:"mc", q:`Resuelve 5x − 9 = x − 4. x =`, opts:["5","−5",F(5,4),F(4,5)], correct:2,
+    fb:`4x = 5 → x = ${F(5,4)}.`},
+   {type:"mc", q:`${PF(6,5,3)} ÷ ${PF(6,5,7)} =`, opts:[PF(6,5,4),PF(6,5,"-4"),PF(6,5,10),PF(6,5,21)], correct:1,
+    fb:`Cociente de igual base: 3 − 7 = −4 → ${PF(6,5,"-4")}.`},
+   {type:"mc", q:`Área de un cuadrado de lado 16 cm =`, opts:["32 cm²","64 cm²","256 cm²","128 cm²"], correct:2,
+    fb:`16 × 16 = 256 cm².`},
+   {type:"mc", q:`Moda de 13,10,15,10,13,12,20,18,18,20,20,15,13 =`, opts:["13 y 20","Solo 13","15","Solo 20"], correct:0,
+    fb:`13 y 20 se repiten 3 veces cada uno → bimodal.`}
+  ]
+ }
+];
+
+/* ============ estado ============ */
+const MAXLIVES=3;
+let mi=0, qi=0, lives=MAXLIVES, points=0, answered=0, correctCount=0;
+let perMod=MODULES.map(m=>({total:m.qs.length, correct:0}));
+let earnedBadges=[];
+let answeredThisQ=false;
+
+const app=document.getElementById('app');
+const hud=document.getElementById('hud');
+const toast=document.getElementById('toast');
+const totalQs=MODULES.reduce((a,m)=>a+m.qs.length,0);
+
+function showToast(msg){toast.innerHTML=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);}
+function updateHUD(){
+  document.getElementById('hudMod').textContent=MODULES[mi].icon+" "+MODULES[mi].name.split('·')[0].trim();
+  document.getElementById('hudPts').textContent=points;
+  document.getElementById('hudLives').textContent="❤️".repeat(lives)+"🖤".repeat(MAXLIVES-lives);
+  document.getElementById('hudBar').style.width=(answered/totalQs*100)+"%";
+}
+const cheers=["¡Excelente, Mía! 🎉","¡Muy bien! 💪","¡Correcto! ⭐","¡Lo dominaste! 🚀","¡Genial! 🌟"];
+const tries=["Casi… revisa la explicación 👀","No pasa nada, ¡así se aprende! 📚","Tranquila, mira el porqué 💡"];
+
+/* ============ pantallas ============ */
+function startScreen(){
+  hud.style.display='none';
+  let tiles=MODULES.map(m=>`<div class="modtile"><div class="ic">${m.icon}</div><div><b>${m.name.split('·')[1].trim()}</b><span>${m.intro}</span></div></div>`).join('');
+  app.innerHTML=`
+    <span class="pill">1er Año · Evaluación de cierre</span>
+    <h1>🏆 Reto Matemático de Mía</h1>
+    <div class="sub">Un repaso con juegos para practicar fracciones, ecuaciones, geometría, estadística y más. Ganas estrellas ⭐, insignias 🏅 y al final ves tu resultado.</div>
+    <div class="modlist">${tiles}</div>
+    <div class="help">Cómo se juega: lee cada reto, elige o escribe tu respuesta y pulsa <b style="display:inline">Comprobar</b>. Si te equivocas, lee la explicación: ¡ahí está el truco para recordarlo!</div>
+    <button class="btn" onclick="beginGame()">Comenzar el reto ▶</button>
+    <div class="mini">Tienes ❤️❤️❤️ vidas por módulo. ¡Mucho ánimo!</div>`;
+}
+
+function beginGame(){
+  mi=0;qi=0;lives=MAXLIVES;points=0;answered=0;correctCount=0;
+  perMod=MODULES.map(m=>({total:m.qs.length,correct:0}));earnedBadges=[];
+  hud.style.display='flex';
+  moduleIntro();
+}
+
+function moduleIntro(){
+  lives=MAXLIVES;qi=0;updateHUD();
+  const m=MODULES[mi];
+  app.innerHTML=`
+    <span class="pill">Módulo ${mi+1} de ${MODULES.length}</span>
+    <h1>${m.icon} ${m.name.split('·')[1].trim()}</h1>
+    <div class="sub">${m.intro}</div>
+    <div class="help">Este módulo tiene <b style="display:inline">${m.qs.length} retos</b>. Si aciertas la mayoría, ganarás la insignia <b style="display:inline">🏅 ${m.badge}</b>.</div>
+    <button class="btn" onclick="renderQ()">¡Empezar módulo! ▶</button>`;
+}
+
+function renderQ(){
+  answeredThisQ=false;
+  const m=MODULES[mi], q=m.qs[qi];
+  updateHUD();
+  let body='';
+  if(q.type==='mc'||q.type==='prop'){
+    body=`<div class="opts" id="opts">`+q.opts.map((o,i)=>
+      `<button class="opt" data-i="${i}" onclick="selectOpt(${i})"><span class="tag">${"ABCD"[i]}</span><span>${o}</span></button>`).join('')+`</div>`;
+  }else if(q.type==='tf'){
+    body=`<div class="tf" id="opts">
+      <button class="opt" data-i="1" onclick="selectOpt(1)">✔ Verdadero</button>
+      <button class="opt" data-i="0" onclick="selectOpt(0)">✗ Falso</button></div>`;
+  }else if(q.type==='fill'){
+    body=`<div class="fill"><input id="fillin" type="text" autocomplete="off" placeholder="Escribe tu respuesta aquí" onkeydown="if(event.key==='Enter')checkAnswer()"></div>`;
+  }else if(q.type==='order'){
+    const shuffled=q.steps.map((s,i)=>({s,i})).sort(()=>Math.random()-0.5);
+    body=`<div class="help">Toca los pasos en el orden correcto.</div>
+      <div class="order-target" id="otarget"></div>
+      <div class="order-pool" id="opool">`+shuffled.map(o=>
+      `<div class="step" data-i="${o.i}" onclick="placeStep(this)">${o.s}</div>`).join('')+`</div>`;
+  }
+  app.innerHTML=`
+    <span class="pill">${m.icon} ${m.name.split('·')[0].trim()} · Reto ${qi+1}/${m.qs.length}</span>
+    <div class="q">${q.q}</div>
+    ${q.help?`<div class="help">💡 ${q.help}</div>`:''}
+    ${body}
+    <div class="fb" id="fb"></div>
+    <button class="btn" id="action" onclick="checkAnswer()">Comprobar</button>`;
+  window._sel=null;window._order=[];
+}
+
+function selectOpt(i){
+  if(answeredThisQ)return;
+  window._sel=i;
+  document.querySelectorAll('#opts .opt').forEach(b=>b.classList.toggle('sel',+b.dataset.i===i));
+}
+function placeStep(el){
+  if(answeredThisQ||el.classList.contains('placed'))return;
+  el.classList.add('placed');
+  window._order.push(+el.dataset.i);
+  const tgt=document.getElementById('otarget');
+  const clone=document.createElement('div');
+  clone.className='step';clone.textContent=(window._order.length)+'. '+el.textContent;
+  tgt.appendChild(clone);
+}
+
+function checkAnswer(){
+  const m=MODULES[mi], q=m.qs[qi];
+  if(answeredThisQ){nextQ();return;}
+  let ok=false;
+  if(q.type==='mc'||q.type==='prop'||q.type==='tf'){
+    if(window._sel===null||window._sel===undefined){showToast("Elige una opción 🙂");return;}
+    ok=(q.type==='tf')?((window._sel===1)===q.correct):(window._sel===q.correct);
+    const idxCorrect=(q.type==='tf')?(q.correct?1:0):q.correct;
+    document.querySelectorAll('#opts .opt').forEach(b=>{
+      const bi=+b.dataset.i;b.classList.add('disabled');
+      if(bi===idxCorrect)b.classList.add('correct');
+      if(bi===window._sel&&!ok)b.classList.add('wrong');
+    });
+  }else if(q.type==='fill'){
+    const v=(document.getElementById('fillin').value||'').trim().toLowerCase().replace(/\s/g,'');
+    if(!v){showToast("Escribe una respuesta 🙂");return;}
+    ok=q.answers.map(a=>a.toLowerCase().replace(/\s/g,'')).includes(v);
+    document.getElementById('fillin').style.borderColor=ok?'var(--good)':'var(--bad)';
+    document.getElementById('fillin').disabled=true;
+  }else if(q.type==='order'){
+    if(window._order.length<q.steps.length){showToast("Coloca todos los pasos 🙂");return;}
+    ok=window._order.every((v,k)=>v===k);
+    document.querySelectorAll('#opool .step').forEach(s=>s.style.pointerEvents='none');
+  }
+  answeredThisQ=true;
+  answered++;
+  const fb=document.getElementById('fb');
+  if(ok){
+    points+=10;correctCount++;perMod[mi].correct++;
+    fb.className='fb ok show';
+    fb.innerHTML=`<b>${cheers[Math.floor(Math.random()*cheers.length)]}</b>${q.fb}`;
+  }else{
+    lives=Math.max(0,lives-1);
+    fb.className='fb no show';
+    fb.innerHTML=`<b>${tries[Math.floor(Math.random()*tries.length)]}</b>${q.fb}`;
+  }
+  updateHUD();
+  document.getElementById('action').textContent = (qi<m.qs.length-1)?'Siguiente ▶':'Terminar módulo ✓';
+}
+
+function nextQ(){
+  const m=MODULES[mi];
+  if(qi<m.qs.length-1){qi++;renderQ();}
+  else moduleEnd();
+}
+
+function moduleEnd(){
+  const m=MODULES[mi], r=perMod[mi];
+  const pct=Math.round(r.correct/r.total*100);
+  let gotBadge=pct>=70;
+  if(gotBadge&&!earnedBadges.includes(m.badge)){earnedBadges.push(m.badge);showToast("🏅 ¡Insignia desbloqueada!<br>"+m.badge);}
+  const msg = pct>=90?"¡Increíble dominio! 🌟" : pct>=70?"¡Muy buen trabajo! 💪" : "¡Buen intento! Vale la pena repasar este módulo. 📚";
+  app.innerHTML=`
+    <span class="pill">Módulo ${mi+1} completado</span>
+    <h1>${m.icon} ${pct}% de aciertos</h1>
+    <div class="sub">${msg} Acertaste ${r.correct} de ${r.total} retos.</div>
+    <div class="badges">${gotBadge?`<span class="badge">🏅 ${m.badge}</span>`:`<span class="badge lock">🔒 ${m.badge} (necesitas 70%)</span>`}</div>
+    <div class="bar" style="margin-top:16px;background:#eee"><i style="width:${pct}%;background:linear-gradient(90deg,var(--teal),var(--amber))"></i></div>
+    <button class="btn" onclick="afterModule()">${mi<MODULES.length-1?'Siguiente módulo ▶':'Ver mi resultado final 🏁'}</button>`;
+}
+
+function afterModule(){
+  if(mi<MODULES.length-1){mi++;moduleIntro();}
+  else finalScreen();
+}
+
+function finalScreen(){
+  hud.style.display='none';
+  const pct=Math.round(correctCount/answered*100);
+  const dominated=perMod.map((r,i)=>({n:MODULES[i].name.split('·')[1].trim(),pct:Math.round(r.correct/r.total*100)}));
+  const strong=dominated.filter(d=>d.pct>=70).map(d=>d.n);
+  const weak=dominated.filter(d=>d.pct<70).map(d=>d.n);
+  let reco = pct>=85
+    ? "¡Vas excelente! Repasa rápido tus apuntes y descansa bien antes de la evaluación."
+    : pct>=60
+    ? "Buen avance. Dedica un ratito extra a los módulos marcados para reforzar y vuelve a jugar."
+    : "Vale la pena estudiar de nuevo con papá la guía resuelta y luego repetir el juego. ¡Tú puedes!";
+  const badgeHTML = earnedBadges.length
+    ? earnedBadges.map(b=>`<span class="badge">🏅 ${b}</span>`).join('')
+    : `<span class="badge lock">Aún sin insignias — ¡juega otra vez!</span>`;
+  app.innerHTML=`
+    <span class="pill">🏁 Resultado final</span>
+    <h1>¡Terminaste el reto, Mía!</h1>
+    <div class="score-big">${points} ⭐</div>
+    <div class="sub" style="text-align:center">Puntuación total</div>
+    <div class="grid2">
+      <div class="kpi"><b>${pct}%</b><span>Aciertos</span></div>
+      <div class="kpi"><b>${correctCount}/${answered}</b><span>Respuestas correctas</span></div>
+      <div class="kpi"><b>${strong.length}/${MODULES.length}</b><span>Módulos dominados</span></div>
+      <div class="kpi"><b>${earnedBadges.length}</b><span>Insignias 🏅</span></div>
+    </div>
+    <div><b style="color:var(--pri)">Insignias ganadas:</b><div class="badges" style="margin-top:6px">${badgeHTML}</div></div>
+    <div style="margin-top:14px"><b style="color:var(--good)">Temas dominados:</b>
+      <div style="font-size:.9rem;margin-top:4px">${strong.length?strong.join(' · '):'Aún ninguno al 70%'}</div></div>
+    <div style="margin-top:10px"><b style="color:var(--bad)">Temas a reforzar:</b>
+      <div style="font-size:.9rem;margin-top:4px">${weak.length?weak.join(' · '):'¡Ninguno! 🎉 Excelente'}</div></div>
+    <div class="reco"><b>📌 Recomendación de estudio:</b><br>${reco}</div>
+    <div class="dad">👨‍👧 Muéstrale esta pantalla a papá para revisar juntos el resultado.</div>
+    <button class="btn" style="margin-top:14px" onclick="beginGame()">Jugar otra vez 🔄</button>
+    <button class="btn ghost" onclick="startScreen()">Volver al inicio 🏠</button>
+    <div class="mini">Reto Matemático · 1er Año · Evaluación de cierre — hecho con cariño para Mía Sabrina.</div>`;
+}
+
+/* arranque */
+startScreen();
+</script>
+</body>
+</html>

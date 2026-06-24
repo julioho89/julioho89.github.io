@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Quest — Global Connections & Grammar</title>
+<style>
+  :root{
+    --navy:#1f4e5f; --teal:#2e8b96; --teal-d:#226d77; --green:#2e9e6b; --green-d:#1f7a50;
+    --red:#e0533d; --red-d:#c23e2a; --amber:#f5a623; --bg1:#0d3b46; --bg2:#16707d;
+    --card:#ffffff; --ink:#21363b; --muted:#5d7178; --soft:#eef6f7; --gold:#f6c343;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--ink);min-height:100vh;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    background-attachment:fixed;padding:16px;display:flex;justify-content:center;
+  }
+  .app{width:100%;max-width:840px;}
+  /* top bar */
+  .hud{
+    background:rgba(255,255,255,.13);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.22);border-radius:16px;
+    padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    color:#fff;margin-bottom:14px;
+  }
+  .hud .pill{display:flex;align-items:center;gap:6px;font-weight:700;font-size:15px;
+    background:rgba(255,255,255,.16);padding:6px 12px;border-radius:30px;}
+  .hud .grow{flex:1;min-width:120px;}
+  .bar{height:12px;background:rgba(255,255,255,.22);border-radius:20px;overflow:hidden;}
+  .bar > i{display:block;height:100%;width:0;border-radius:20px;
+    background:linear-gradient(90deg,var(--gold),#ffe08a);transition:width .4s ease;}
+  .lives{font-size:18px;letter-spacing:1px;}
+  /* card */
+  .card{background:var(--card);border-radius:22px;padding:26px 24px;
+    box-shadow:0 18px 50px rgba(0,0,0,.28);}
+  h1{font-size:30px;color:var(--navy);line-height:1.15;margin-bottom:6px;}
+  h2{font-size:23px;color:var(--navy);margin-bottom:10px;}
+  .sub{color:var(--teal);font-weight:700;font-size:17px;margin-bottom:14px;}
+  p.lead{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:16px;}
+  .globe{font-size:60px;text-align:center;margin-bottom:6px;}
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;cursor:pointer;font-weight:800;font-size:17px;color:#fff;
+    background:linear-gradient(180deg,var(--teal),var(--teal-d));
+    padding:14px 26px;border-radius:16px;transition:transform .08s, box-shadow .15s;
+    box-shadow:0 6px 0 var(--teal-d);width:100%;}
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--teal-d);}
+  .btn.green{background:linear-gradient(180deg,var(--green),var(--green-d));box-shadow:0 6px 0 var(--green-d);}
+  .btn.ghost{background:#fff;color:var(--teal-d);border:2px solid var(--teal);box-shadow:0 6px 0 #cfe4e6;}
+  .btn.small{width:auto;font-size:15px;padding:10px 18px;}
+  /* module map */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:8px;}
+  .mod{position:relative;border-radius:18px;padding:16px;color:#fff;cursor:pointer;
+    background:linear-gradient(140deg,#2e8b96,#1f4e5f);overflow:hidden;transition:transform .12s;
+    border:2px solid rgba(255,255,255,.15);}
+  .mod:hover{transform:translateY(-3px);}
+  .mod.done{background:linear-gradient(140deg,#2e9e6b,#1f7a50);}
+  .mod.locked{opacity:.55;cursor:not-allowed;filter:grayscale(.3);}
+  .mod .ic{font-size:30px;}
+  .mod .t{font-weight:800;font-size:16px;margin:6px 0 3px;}
+  .mod .d{font-size:13px;opacity:.9;line-height:1.35;}
+  .mod .chk{position:absolute;top:10px;right:12px;font-size:20px;}
+  /* question */
+  .qtag{display:inline-block;background:var(--soft);color:var(--teal-d);
+    font-weight:800;font-size:13px;padding:5px 12px;border-radius:20px;margin-bottom:12px;}
+  .qtext{font-size:20px;font-weight:700;line-height:1.4;color:var(--ink);margin-bottom:8px;}
+  .qtext .blank{color:var(--teal-d);font-weight:900;}
+  .reading{background:var(--soft);border-left:6px solid var(--teal);border-radius:12px;
+    padding:14px 16px;font-size:15px;line-height:1.55;color:#33474c;margin-bottom:14px;}
+  .reading b{color:var(--navy);}
+  .opts{display:grid;gap:10px;margin:8px 0;}
+  .opt{border:2px solid #d8e6e8;background:#fff;border-radius:14px;padding:14px 16px;
+    font-size:16px;font-weight:600;cursor:pointer;text-align:left;transition:.12s;color:var(--ink);}
+  .opt:hover{border-color:var(--teal);background:#f4fbfb;}
+  .opt.correct{border-color:var(--green);background:#e8f8f0;color:var(--green-d);}
+  .opt.wrong{border-color:var(--red);background:#fdeeea;color:var(--red-d);}
+  .opt.dim{opacity:.5;}
+  .opt:disabled{cursor:default;}
+  input.fill{width:100%;border:2px solid #d8e6e8;border-radius:14px;padding:14px 16px;
+    font-size:18px;font-weight:700;color:var(--navy);outline:none;}
+  input.fill:focus{border-color:var(--teal);}
+  .hint{font-size:13px;color:var(--muted);margin-top:8px;font-style:italic;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .row .btn{flex:1;}
+  /* feedback */
+  .fb{margin-top:14px;border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.5;display:none;}
+  .fb.show{display:block;animation:pop .25s ease;}
+  .fb.ok{background:#e8f8f0;border:1.5px solid var(--green);}
+  .fb.no{background:#fdeeea;border:1.5px solid var(--red);}
+  .fb .h{font-weight:800;font-size:16px;margin-bottom:4px;}
+  .fb.ok .h{color:var(--green-d);} .fb.no .h{color:var(--red-d);}
+  @keyframes pop{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+  /* classify */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0 4px;}
+  .chip{background:#fff;border:2px solid var(--teal);color:var(--teal-d);font-weight:800;
+    border-radius:30px;padding:10px 18px;font-size:16px;}
+  .bins{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  .bin{border:2.5px dashed #bcd6d9;border-radius:16px;padding:12px;min-height:90px;text-align:center;}
+  .bin h4{color:var(--navy);font-size:15px;margin-bottom:8px;}
+  .bin .drop{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+  .tok{background:var(--soft);border-radius:20px;padding:6px 12px;font-weight:700;font-size:14px;}
+  .tok.c{background:#e8f8f0;color:var(--green-d);} .tok.w{background:#fdeeea;color:var(--red-d);}
+  /* checklist / writing */
+  .check{display:flex;align-items:flex-start;gap:10px;background:var(--soft);border-radius:12px;
+    padding:10px 12px;margin-bottom:8px;cursor:pointer;font-size:15px;line-height:1.4;}
+  .check input{margin-top:3px;transform:scale(1.3);accent-color:var(--teal);}
+  textarea{width:100%;border:2px solid #d8e6e8;border-radius:14px;padding:12px;font-size:15px;
+    font-family:inherit;min-height:120px;outline:none;color:var(--ink);}
+  textarea:focus{border-color:var(--teal);}
+  .model{background:#fff7e6;border:1.5px solid var(--amber);border-radius:14px;padding:14px;
+    font-size:15px;line-height:1.55;color:#5a4a22;margin-top:12px;font-style:italic;}
+  /* badges */
+  .badges{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;}
+  .badge{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #ead9a6;
+    border-radius:30px;padding:8px 14px;font-weight:800;font-size:14px;color:#9a7b1f;opacity:.35;filter:grayscale(.7);}
+  .badge.win{opacity:1;filter:none;border-color:var(--gold);background:#fffaf0;box-shadow:0 4px 14px rgba(246,195,67,.4);}
+  .badge .e{font-size:20px;}
+  /* results */
+  .score-big{font-size:54px;font-weight:900;color:var(--navy);text-align:center;line-height:1;}
+  .score-lbl{text-align:center;color:var(--muted);font-weight:700;margin-bottom:14px;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:14px 0;}
+  .stat{background:var(--soft);border-radius:14px;padding:12px;text-align:center;}
+  .stat .n{font-size:26px;font-weight:900;color:var(--teal-d);}
+  .stat .l{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .topiclist{margin:6px 0 14px;}
+  .topiclist .ti{display:flex;justify-content:space-between;align-items:center;
+    padding:8px 12px;border-radius:10px;margin-bottom:6px;font-size:14px;font-weight:600;}
+  .topiclist .ti.good{background:#e8f8f0;color:var(--green-d);}
+  .topiclist .ti.bad{background:#fdeeea;color:var(--red-d);}
+  .reco{background:var(--navy);color:#fff;border-radius:16px;padding:16px;line-height:1.5;font-size:15px;margin:12px 0;}
+  .papa{background:linear-gradient(135deg,var(--amber),#f7c873);color:#3d2b00;border-radius:16px;
+    padding:16px;text-align:center;font-weight:800;font-size:17px;margin:12px 0;line-height:1.4;}
+  .center{text-align:center;}
+  .small-note{font-size:13px;color:var(--muted);text-align:center;margin-top:10px;}
+  .hide{display:none!important;}
+  @media(max-width:520px){
+    .card{padding:20px 16px;}
+    h1{font-size:25px;} .qtext{font-size:18px;}
+    .bins{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HUD -->
+  <div class="hud" id="hud">
+    <div class="pill">⭐ <span id="hudScore">0</span></div>
+    <div class="pill lives" id="hudLives">❤️❤️❤️</div>
+    <div class="grow">
+      <div class="bar"><i id="hudBar"></i></div>
+    </div>
+    <div class="pill">📍 <span id="hudPos">0/0</span></div>
+  </div>
+
+  <div class="card" id="screen"></div>
+
+  <div class="small-note">English Quest · Global Connections &amp; Grammar · para Mía Sabrina 🌎</div>
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+const READING = `<b>Chef Elena's Travels</b><br>
+Elena is a Venezuelan chef. She absolutely loves exploring different cultures. Right now, she is working in a famous restaurant in Italy, but last year she went on a long holiday to Japan. The weather in Japan was very cold, so she bought a big coat. While she was there, she ate sushi and learned how to make traditional ramen.<br><br>
+"Italian food is delicious, but I think Japanese food is healthier," she says. "I hate fast food, but I am extremely passionate about fresh, boiled vegetables and grilled fish. In my kitchen in Rome, there are always fresh tomatoes and basil."`;
+
+// topics: pc=Present continuous/simple present, past=Simple past, there=There is/are,
+// intens=Intensifiers, comp=Comparatives/superlatives, read=Reading, jobs=Jobs,
+// nat=Countries & nationalities, count=Countable/uncountable, write=Writing
+const TOPIC_NAMES = {
+  pc:"Present continuous & simple present", past:"Simple past (regular & irregular)",
+  there:"There is / There are", intens:"Intensifiers", comp:"Comparatives & superlatives",
+  read:"Reading comprehension", jobs:"Jobs & professions", nat:"Countries & nationalities",
+  count:"Countable & uncountable nouns", write:"Holiday writing"
+};
+
+const MODULES = [
+  {
+    id:"m1", title:"Grammar Warm-Up", icon:"🧠", badge:"grammar",
+    intro:"Practica present continuous, simple present, simple past, there is/there are e intensifiers.",
+    questions:[
+      {type:"mc", topic:"pc", q:"Look outside! It <span class='blank'>______</span> extremely hard today, so we cannot go to the park.",
+        options:["is raining","rains","rained","are raining"], answer:0,
+        explain:"<b>is raining</b> ✓ Present continuous (is + -ing) para algo que pasa AHORA. La pista «Look outside! / today» lo confirma. Con «It» usamos «is», no «are»."},
+      {type:"mc", topic:"there", q:"<span class='blank'>______</span> many different species of frogs in the Amazon rainforest.",
+        options:["There is","There are","They are","There aren't"], answer:1,
+        explain:"<b>There are</b> ✓ «species» es plural, así que usamos «There are». «There is» es para singular."},
+      {type:"mc", topic:"intens", q:"I love Indian curry, but sometimes it is <span class='blank'>______</span> spicy for my taste!",
+        options:["absolutely","completely","incredibly","fairly"], answer:2,
+        explain:"<b>incredibly</b> ✓ «spicy» es graduable, así que combina con incredibly/very. La queja «but… for my taste!» pide un intensificador fuerte. «absolutely/completely» van con adjetivos extremos."},
+      {type:"mc", topic:"past", q:"Last holiday, my family and I <span class='blank'>______</span> to France. It was amazing!",
+        options:["fly","flying","flied","flew"], answer:3,
+        explain:"<b>flew</b> ✓ «Last holiday» = pasado. «fly» es irregular: fly → flew → flown. Nunca «flied»."},
+      {type:"fill", topic:"pc", q:"Complete with present continuous: \"Sara <span class='blank'>______</span> (work) in a restaurant right now.\"",
+        answers:["is working"], hint:"Pista: right now → is/are + verbo-ing.",
+        explain:"<b>is working</b> ✓ «right now» pide present continuous. Sujeto «Sara» (she) → is + working."},
+      {type:"mc", topic:"pc", q:"Choose the correct tense: \"Every day, she <span class='blank'>______</span> to school.\"",
+        options:["is walking","walks","walked","walk"], answer:1,
+        explain:"<b>walks</b> ✓ «Every day» = rutina → simple present. Con she/he/it agregamos -s: walks."},
+      {type:"mc", topic:"intens", q:"Identify the intensifier: \"The desert is absolutely beautiful.\"",
+        options:["desert","is","absolutely","beautiful"], answer:2,
+        explain:"<b>absolutely</b> ✓ El intensificador es la palabra que hace más fuerte al adjetivo. Va antes del adjetivo (absolutely beautiful)."},
+      {type:"fill", topic:"there", q:"Complete: \"<span class='blank'>______</span> a cat on the roof.\" (singular)",
+        answers:["there is","there's"], hint:"Pista: singular (a cat).",
+        explain:"<b>There is</b> ✓ Un solo gato (singular) → There is."}
+    ]
+  },
+  {
+    id:"m2", title:"Reading Mission", icon:"📖", badge:"reading",
+    intro:"Lee el texto de Chef Elena y responde. ¡Lee con cuidado!",
+    reading:true,
+    questions:[
+      {type:"mc", topic:"read", q:"Where is Elena working right now?",
+        options:["In a restaurant in Japan","In a famous restaurant in Italy","In a kitchen in Venezuela","On a holiday in France"], answer:1,
+        explain:"<b>In a famous restaurant in Italy</b> ✓ El texto dice: «Right now, she is working in a famous restaurant in Italy.»"},
+      {type:"tf", topic:"read", q:"True or False: Elena went to Japan last year.",
+        answer:true,
+        explain:"<b>True</b> ✓ «last year she went on a long holiday to Japan.»"},
+      {type:"tf", topic:"read", q:"True or False: The weather in Japan was hot.",
+        answer:false,
+        explain:"<b>False</b> ✓ El texto dice «The weather in Japan was very cold», por eso compró un abrigo grande."},
+      {type:"mc", topic:"comp", q:"Elena's opinion: \"Japanese food is <span class='blank'>______</span> than Italian food.\"",
+        options:["healthy","more healthy","healthier","healthiest"], answer:2,
+        explain:"<b>healthier</b> ✓ Comparativo de «healthy». Termina en -y → cambia y por i + er: healthier."},
+      {type:"mc", topic:"read", q:"What did Elena eat while she was in Japan?",
+        options:["pizza and pasta","sushi","hamburgers","tomatoes and basil"], answer:1,
+        explain:"<b>sushi</b> ✓ «she ate sushi and learned how to make traditional ramen.»"},
+      {type:"fill", topic:"nat", q:"Complete: \"Elena is <span class='blank'>______</span>.\" (nationality of Venezuela)",
+        answers:["venezuelan"], hint:"Pista: la nacionalidad de Venezuela (con mayúscula).",
+        explain:"<b>Venezuelan</b> ✓ «Elena is a Venezuelan chef.» Las nacionalidades van con mayúscula."}
+    ]
+  },
+  {
+    id:"m3", title:"Jobs & Professions", icon:"💼", badge:"vocab",
+    intro:"Relaciona cada descripción con la profesión correcta.",
+    questions:[
+      {type:"mc", topic:"jobs", q:"\"I work in a kitchen and I love preparing absolutely delicious roasted meals.\" Which job?",
+        options:["Architect","Chef","Pilot","Scientist"], answer:1,
+        explain:"<b>Chef</b> ✓ Pistas: «kitchen», «meals». El chef cocina."},
+      {type:"mc", topic:"jobs", q:"\"I design buildings and ensure there are safe structures for people.\" Which job?",
+        options:["Architect","Scientist","Pilot","Chef"], answer:0,
+        explain:"<b>Architect</b> ✓ Pista: «design buildings» (diseña edificios)."},
+      {type:"mc", topic:"jobs", q:"\"I study the universe and extremely complex ecosystems.\" Which job?",
+        options:["Pilot","Chef","Scientist","Architect"], answer:2,
+        explain:"<b>Scientist</b> ✓ Pista: «study the universe / ecosystems» (investiga)."},
+      {type:"mc", topic:"jobs", q:"\"I fly airplanes and travel to many different countries.\" Which job?",
+        options:["Pilot","Architect","Chef","Scientist"], answer:0,
+        explain:"<b>Pilot</b> ✓ Pista: «fly airplanes» (vuela aviones)."}
+    ]
+  },
+  {
+    id:"m4", title:"Adjective Lab", icon:"🔬", badge:"grammar",
+    intro:"Comparatives y superlatives: bigger, biggest, more beautiful, better, best...",
+    questions:[
+      {type:"mc", topic:"comp", q:"Comparative of <b>big</b>:",
+        options:["more big","bigger","biggest","more bigger"], answer:1,
+        explain:"<b>bigger</b> ✓ Adjetivo corto con vocal+consonante: se DUPLICA la consonante (big → bigger)."},
+      {type:"mc", topic:"comp", q:"Superlative of <b>big</b>:",
+        options:["the biggest","the bigest","most big","the more big"], answer:0,
+        explain:"<b>the biggest</b> ✓ Superlativo: the + adjetivo + -est, doblando la g (the biggest)."},
+      {type:"mc", topic:"comp", q:"Comparative of <b>spicy</b>:",
+        options:["more spicy","spicyer","spicier","spiciest"], answer:2,
+        explain:"<b>spicier</b> ✓ Termina en -y → cambia y por i + er: spicier."},
+      {type:"mc", topic:"comp", q:"<b>good</b> → comparative / superlative:",
+        options:["gooder / goodest","more good / most good","better / the best","best / the better"], answer:2,
+        explain:"<b>better / the best</b> ✓ «good» es IRREGULAR: good → better → the best. ¡Memorízalo!"},
+      {type:"fill", topic:"comp", q:"Superlative of <b>beautiful</b>:",
+        answers:["the most beautiful","most beautiful"], hint:"Pista: es un adjetivo largo (usa most).",
+        explain:"<b>the most beautiful</b> ✓ Adjetivos largos usan the most (no -est)."},
+      {type:"mc", topic:"comp", q:"Which one is correct?",
+        options:["beautifuler","more beautiful","beautifulest","most beautifuler"], answer:1,
+        explain:"<b>more beautiful</b> ✓ Los adjetivos largos usan more (comparativo) y most (superlativo)."}
+    ]
+  },
+  {
+    id:"m5", title:"Countries & Nationalities", icon:"🌍", badge:"vocab",
+    intro:"Completa el país o la nacionalidad. ¡Recuerda la mayúscula!",
+    questions:[
+      {type:"fill", topic:"nat", q:"Country: <b>Japan</b> → Nationality: <span class='blank'>______</span>",
+        answers:["japanese"], hint:"Pista: termina en -ese.",
+        explain:"<b>Japanese</b> ✓ Japan → Japanese. Con mayúscula."},
+      {type:"fill", topic:"nat", q:"Country: <b>France</b> → Nationality: <span class='blank'>______</span>",
+        answers:["french"], hint:"Pista: caso especial, no «Francian».",
+        explain:"<b>French</b> ✓ France → French (caso especial)."},
+      {type:"mc", topic:"nat", q:"Nationality of <b>Italy</b>:",
+        options:["Italish","Italian","Italiano","Italese"], answer:1,
+        explain:"<b>Italian</b> ✓ Italy → Italian."},
+      {type:"fill", topic:"nat", q:"Country: <b>Brazil</b> → Nationality: <span class='blank'>______</span>",
+        answers:["brazilian"], hint:"Pista: termina en -ian.",
+        explain:"<b>Brazilian</b> ✓ Brazil → Brazilian."},
+      {type:"mc", topic:"nat", q:"Nationality: <span class='blank'>______</span> → Country: <b>Venezuela</b>",
+        options:["Venezuelian","Venezolan","Venezuelan","Venezuelano"], answer:2,
+        explain:"<b>Venezuelan</b> ✓ Venezuela → Venezuelan."}
+    ]
+  },
+  {
+    id:"m6", title:"Food Challenge", icon:"🍎", badge:"vocab",
+    intro:"Clasifica los alimentos en contables o incontables y usa there is/there are.",
+    classify:{
+      title:"Tap each food and send it to the correct box:",
+      items:[
+        {w:"water", c:false},{w:"apples", c:true},{w:"rice", c:false},
+        {w:"tomatoes", c:true},{w:"cheese", c:false},{w:"hamburgers", c:true}
+      ],
+      explainC:"Contables (se cuentan, tienen plural): apples, tomatoes, hamburgers.",
+      explainU:"Incontables (no se cuentan en unidades): water, rice, cheese."
+    },
+    questions:[
+      {type:"mc", topic:"there", q:"Complete: \"<span class='blank'>______</span> some cheese in the fridge.\"",
+        options:["There is","There are","They are","There be"], answer:0,
+        explain:"<b>There is</b> ✓ «cheese» es incontable → se trata como singular → There is."},
+      {type:"mc", topic:"there", q:"Complete: \"<span class='blank'>______</span> three apples on the table.\"",
+        options:["There is","There are","It is","There has"], answer:1,
+        explain:"<b>There are</b> ✓ «three apples» es plural contable → There are."}
+    ]
+  },
+  {
+    id:"m7", title:"Holiday Writing", icon:"✏️", badge:"writer",
+    intro:"Escribe un párrafo corto (4–6 oraciones) sobre unas vacaciones. Incluye todos los requisitos.",
+    writing:true
+  }
+];
+
+const FINAL = {
+  id:"final", title:"English Quest — Final Challenge", icon:"🏆",
+  intro:"¡Reto final! Mezcla de gramática, vocabulario y reading. Demuestra todo lo que aprendiste.",
+  questions:[
+    {type:"mc", topic:"past", q:"Past simple of <b>see</b>:",
+      options:["seed","saw","seen","sawed"], answer:1,
+      explain:"<b>saw</b> ✓ see → saw (irregular)."},
+    {type:"mc", topic:"past", q:"Past simple of <b>eat</b>:",
+      options:["eated","ate","eaten","eat"], answer:1,
+      explain:"<b>ate</b> ✓ eat → ate (irregular)."},
+    {type:"fill", topic:"past", q:"Past simple (regular): \"They <span class='blank'>______</span> (travel) to the mountains.\"",
+      answers:["travelled","traveled"], hint:"Pista: verbo regular + -ed.",
+      explain:"<b>travelled / traveled</b> ✓ Verbo regular: travel + ed. (Ambas formas son válidas.)"},
+    {type:"mc", topic:"comp", q:"Superlative of <b>cold</b>:",
+      options:["the coldest","colder","the colder","most cold"], answer:0,
+      explain:"<b>the coldest</b> ✓ Adjetivo corto: the + cold + est."},
+    {type:"mc", topic:"there", q:"\"In my kitchen, <span class='blank'>______</span> always fresh tomatoes.\"",
+      options:["there is","there are","it is","they has"], answer:1,
+      explain:"<b>there are</b> ✓ «tomatoes» es plural → there are."},
+    {type:"mc", topic:"jobs", q:"Who flies airplanes?",
+      options:["A chef","A scientist","A pilot","An architect"], answer:2,
+      explain:"<b>A pilot</b> ✓ El piloto vuela aviones."},
+    {type:"fill", topic:"nat", q:"Country of an <b>Italian</b> person:",
+      answers:["italy"], hint:"Pista: el país, con mayúscula.",
+      explain:"<b>Italy</b> ✓ Italian → Italy."},
+    {type:"mc", topic:"count", q:"Which word is <b>uncountable</b>?",
+      options:["apples","tomatoes","rice","hamburgers"], answer:2,
+      explain:"<b>rice</b> ✓ El arroz es incontable (no decimos «two rices»)."},
+    {type:"mc", topic:"intens", q:"Rewrite with an intensifier: \"The desert is ___ hot.\"",
+      options:["hot extremely","extremely hot","extreme hot","hotly extreme"], answer:1,
+      explain:"<b>extremely hot</b> ✓ El intensificador va ANTES del adjetivo."},
+    {type:"tf", topic:"read", q:"True or False: Elena hates fast food.",
+      answer:true,
+      explain:"<b>True</b> ✓ «I hate fast food, but I am extremely passionate about fresh... vegetables.»"}
+  ]
+};
+
+const BADGE_DEFS = {
+  grammar:{emoji:"⭐", name:"Grammar Star"},
+  reading:{emoji:"🧭", name:"Reading Explorer"},
+  vocab:{emoji:"📚", name:"Vocabulary Master"},
+  writer:{emoji:"🖊️", name:"Holiday Writer"}
+};
+
+/* ============================ STATE ============================ */
+const ALL = MODULES.concat([FINAL]);
+let state = {
+  score:0, lives:3, maxLives:3,
+  totalQ:0, answered:0,
+  topic:{}, // topic -> {c, t}
+  modIndex:-1, qIndex:0,
+  modDone:{}, // modId -> true
+  badges:{}, // key -> true
+  writingDone:false
+};
+// count total questions
+ALL.forEach(m=>{ if(m.questions) state.totalQ += m.questions.length; });
+state.totalQ += 1; // writing counts as 1
+
+const screen = document.getElementById('screen');
+const $ = id=>document.getElementById(id);
+
+function recordTopic(topic, ok){
+  if(!state.topic[topic]) state.topic[topic]={c:0,t:0};
+  state.topic[topic].t++; if(ok) state.topic[topic].c++;
+}
+function updateHud(){
+  $('hudScore').textContent = state.score;
+  let hearts=""; for(let i=0;i<state.maxLives;i++) hearts += i<state.lives?"❤️":"🤍";
+  $('hudLives').textContent = hearts;
+  $('hudPos').textContent = state.answered+"/"+state.totalQ;
+  $('hudBar').style.width = Math.round(state.answered/state.totalQ*100)+"%";
+}
+function loseLife(){
+  state.lives--;
+  if(state.lives<=0){
+    state.lives = state.maxLives; // segunda oportunidad, no se acaba el juego
+    flashMsg("💪 ¡No te rindas, Mía! Tus corazones se recargan. ¡Sigue intentando!");
+  }
+}
+let msgTimer=null;
+function flashMsg(t){
+  let m=document.createElement('div');
+  m.textContent=t;
+  m.style.cssText="position:fixed;left:50%;top:18px;transform:translateX(-50%);background:#1f4e5f;color:#fff;padding:12px 20px;border-radius:30px;font-weight:800;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90%;text-align:center;";
+  document.body.appendChild(m);
+  clearTimeout(msgTimer);
+  setTimeout(()=>{m.style.transition="opacity .4s";m.style.opacity="0";setTimeout(()=>m.remove(),400);},2200);
+}
+
+const PRAISE=["🎉 Excellent!","🌟 Great job!","✅ Perfect!","🚀 Amazing!","👏 Well done!","💎 Brilliant!"];
+
+/* ============================ SCREENS ============================ */
+function start(){
+  updateHud();
+  screen.innerHTML = `
+    <div class="globe">🌎✈️</div>
+    <h1 class="center">English Quest</h1>
+    <div class="sub center">Global Connections &amp; Grammar</div>
+    <p class="lead center">¡Hola Mía Sabrina! 👋 Este es tu juego de repaso de inglés.
+    Vas a viajar por <b>7 módulos</b> y un <b>reto final</b>, ganando estrellas ⭐ e insignias 🏅.
+    Lee con calma, responde y aprende de cada respuesta.</p>
+    <div class="reading" style="border-color:var(--amber)">
+      <b>¿Cómo se juega?</b><br>
+      • Respondes preguntas en inglés.<br>
+      • Si te equivocas, te explico por qué en español. 🇪🇸<br>
+      • Ganas <b>puntos</b> ⭐ y <b>corazones</b> ❤️ (no te preocupes, se recargan).<br>
+      • Al final verás tu resultado para mostrárselo a papá. 👨‍👧
+    </div>
+    <button class="btn green" onclick="showMap()">¡Empezar la aventura! 🚀</button>
+  `;
+}
+
+function showMap(){
+  updateHud();
+  let cards = ALL.map((m,i)=>{
+    const done = state.modDone[m.id];
+    const isFinal = m.id==="final";
+    // final unlocks when all 7 modules done
+    const allDone = MODULES.every(mm=>state.modDone[mm.id]);
+    const locked = isFinal && !allDone;
+    const cls = "mod"+(done?" done":"")+(locked?" locked":"");
+    const click = locked?"":`onclick="openModule(${i})"`;
+    const qn = m.questions? m.questions.length+" preguntas" : (m.writing?"Escritura guiada":"");
+    return `<div class="${cls}" ${click}>
+      ${done?'<span class="chk">✅</span>':''}
+      <div class="ic">${m.icon}</div>
+      <div class="t">${isFinal?'🏆 ':''}${m.title}</div>
+      <div class="d">${locked?'🔒 Completa los 7 módulos primero':qn}</div>
+    </div>`;
+  }).join("");
+  screen.innerHTML = `
+    <h2>🗺️ Mapa de la misión</h2>
+    <p class="lead">Elige un módulo. Las ✅ muestran lo que ya completaste. El 🏆 reto final se desbloquea al terminar los 7 módulos.</p>
+    ${renderBadges()}
+    <div class="grid">${cards}</div>
+    <p class="small-note">Progreso total: ${state.answered}/${state.totalQ} actividades</p>
+  `;
+}
+
+function renderBadges(){
+  let b = Object.keys(BADGE_DEFS).map(k=>{
+    const d=BADGE_DEFS[k]; const win=state.badges[k];
+    return `<div class="badge ${win?'win':''}"><span class="e">${d.emoji}</span>${d.name}</div>`;
+  }).join("");
+  return `<div class="badges">${b}</div>`;
+}
+
+function openModule(i){
+  state.modIndex=i; state.qIndex=0;
+  const m=ALL[i];
+  if(m.writing){ renderWriting(); return; }
+  if(m.classify && state.qIndex===0 && !m._classDone){ renderClassify(m); return; }
+  renderQuestion();
+}
+
+/* -------- standard question render -------- */
+function renderQuestion(){
+  const m=ALL[state.modIndex];
+  const q=m.questions[state.qIndex];
+  const tag = `${m.icon} ${m.title} · ${state.qIndex+1}/${m.questions.length}`;
+  let body="";
+  if(m.reading) body += `<div class="reading">${READING}</div>`;
+  body += `<span class="qtag">${tag}</span>`;
+  body += `<div class="qtext">${q.q}</div>`;
+
+  if(q.type==="mc"){
+    body += `<div class="opts" id="opts">` + q.options.map((o,idx)=>
+      `<button class="opt" onclick="answerMC(${idx})">${o}</button>`).join("") + `</div>`;
+  } else if(q.type==="tf"){
+    body += `<div class="opts" id="opts">
+      <button class="opt" onclick="answerTF(true)">✅ True</button>
+      <button class="opt" onclick="answerTF(false)">❌ False</button></div>`;
+  } else if(q.type==="fill"){
+    body += `<input class="fill" id="fillIn" autocomplete="off" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')answerFill()">`;
+    if(q.hint) body += `<div class="hint">💡 ${q.hint}</div>`;
+    body += `<div class="row"><button class="btn" onclick="answerFill()">Check ✓</button></div>`;
+  }
+  body += `<div class="fb" id="fb"></div>`;
+  body += `<div class="row" id="navRow"></div>`;
+  screen.innerHTML = body;
+}
+
+function showFeedback(ok, q){
+  state.answered++;
+  recordTopic(q.topic, ok);
+  if(ok){ state.score+=10; } else { loseLife(); }
+  updateHud();
+  const fb=$('fb');
+  fb.className="fb show "+(ok?"ok":"no");
+  fb.innerHTML = `<div class="h">${ok?PRAISE[Math.floor(Math.random()*PRAISE.length)]:"❌ Not quite"}</div>${q.explain}`;
+  $('navRow').innerHTML = `<button class="btn green" onclick="nextQuestion()">Continue →</button>`;
+}
+
+function answerMC(idx){
+  const m=ALL[state.modIndex]; const q=m.questions[state.qIndex];
+  const ok = idx===q.answer;
+  const opts=document.querySelectorAll('#opts .opt');
+  opts.forEach((b,i)=>{ b.disabled=true;
+    if(i===q.answer) b.classList.add('correct');
+    else if(i===idx) b.classList.add('wrong'); else b.classList.add('dim'); });
+  showFeedback(ok,q);
+}
+function answerTF(val){
+  const m=ALL[state.modIndex]; const q=m.questions[state.qIndex];
+  const ok = val===q.answer;
+  const opts=document.querySelectorAll('#opts .opt');
+  opts.forEach((b,i)=>{ b.disabled=true; });
+  // index 0 = True, 1 = False
+  opts[q.answer?0:1].classList.add('correct');
+  if(!ok) opts[val?0:1].classList.add('wrong');
+  showFeedback(ok,q);
+}
+function answerFill(){
+  const m=ALL[state.modIndex]; const q=m.questions[state.qIndex];
+  const inp=$('fillIn'); if(!inp) return;
+  const val=inp.value.trim().toLowerCase().replace(/\s+/g,' ');
+  if(val==="") { inp.focus(); return; }
+  const ok = q.answers.map(a=>a.toLowerCase()).includes(val);
+  inp.disabled=true;
+  inp.style.borderColor = ok?"var(--green)":"var(--red)";
+  inp.style.background = ok?"#e8f8f0":"#fdeeea";
+  // disable check button
+  document.querySelectorAll('#navRow .btn, .row .btn').forEach(b=>b.disabled=true);
+  showFeedback(ok,q);
+}
+
+function nextQuestion(){
+  const m=ALL[state.modIndex];
+  state.qIndex++;
+  if(state.qIndex < m.questions.length){ renderQuestion(); }
+  else { finishModule(); }
+}
+
+/* -------- classify (module 6) -------- */
+function renderClassify(m){
+  const c=m.classify;
+  let remaining = c.items.map((it,i)=>({...it,i}));
+  m._state={remaining, placedC:[], placedU:[], done:0};
+  drawClassify(m);
+}
+function drawClassify(m){
+  const c=m.classify; const st=m._state;
+  let chips = st.remaining.map(it=>
+    `<button class="chip" onclick="placeItem(${it.i})">${it.w}</button>`).join("");
+  if(chips==="") chips=`<div style="color:var(--muted);font-weight:700">¡Todos clasificados! 👇</div>`;
+  function box(arr){ return arr.map(it=>`<span class="tok ${it.ok?'c':'w'}">${it.w}</span>`).join(""); }
+  screen.innerHTML = `
+    <span class="qtag">${m.icon} ${m.title} · Clasificar</span>
+    <div class="qtext">${c.title}</div>
+    <div class="chips">${chips}</div>
+    <div class="bins">
+      <div class="bin"><h4>🔢 Countable</h4><div class="drop">${box(st.placedC)}</div></div>
+      <div class="bin"><h4>💧 Uncountable</h4><div class="drop">${box(st.placedU)}</div></div>
+    </div>
+    <div class="fb" id="fb"></div>
+    <div class="row" id="navRow"></div>
+  `;
+  if(st.remaining.length===0){
+    const correct = st.placedC.filter(x=>x.ok).length + st.placedU.filter(x=>x.ok).length;
+    const total = c.items.length;
+    const allRight = correct===total;
+    recordTopic("count", allRight);
+    state.answered++; // classify counts as 1 activity but not in totalQ; adjust below
+    state.totalQ++; // keep bar honest
+    state.score += correct*5;
+    updateHud();
+    const fb=$('fb'); fb.className="fb show "+(allRight?"ok":"no");
+    fb.innerHTML=`<div class="h">${allRight?'🎉 Perfect classification!':'Casi 😊 '+correct+'/'+total+' correctos'}</div>
+      <b>Countable</b> (se cuentan, tienen plural): ${c.explainC}<br><b>Uncountable</b> (no se cuentan en unidades): ${c.explainU}`;
+    $('navRow').innerHTML=`<button class="btn green" onclick="afterClassify()">Continue →</button>`;
+  }
+}
+function placeItem(i){
+  const m=ALL[state.modIndex]; const st=m._state; const c=m.classify;
+  const it = st.remaining.find(x=>x.i===i); if(!it) return;
+  // decide bin: ask via two quick buttons
+  showClassifyChoice(m,it);
+}
+function showClassifyChoice(m,it){
+  const wrap=document.createElement('div');
+  wrap.style.cssText="position:fixed;inset:0;background:rgba(13,59,70,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px;";
+  wrap.innerHTML=`<div style="background:#fff;border-radius:20px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)">
+    <div style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:6px">"${it.w}"</div>
+    <p style="color:var(--muted);margin-bottom:16px">¿Es contable o incontable?</p>
+    <button class="btn" style="margin-bottom:10px" data-bin="c">🔢 Countable</button>
+    <button class="btn ghost" data-bin="u">💧 Uncountable</button>
+  </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const m=ALL[state.modIndex]; const st=m._state;
+    const chose = b.dataset.bin==="c"; // true=countable
+    const ok = chose===it.c;
+    const placed={w:it.w, ok};
+    if(chose) st.placedC.push(placed); else st.placedU.push(placed);
+    st.remaining = st.remaining.filter(x=>x.i!==it.i);
+    wrap.remove();
+    drawClassify(m);
+  });
+}
+function afterClassify(){
+  const m=ALL[state.modIndex]; m._classDone=true;
+  state.qIndex=0; renderQuestion();
+}
+
+/* -------- writing (module 7) -------- */
+function renderWriting(){
+  const reqs=[
+    "El país y la nacionalidad de las personas (e.g., Italy / Italian).",
+    "Cómo estaba el clima (weather): warm, sunny, cold...",
+    "Un verbo irregular en pasado #1 (e.g., went, saw, ate).",
+    "Un verbo irregular en pasado #2.",
+    "Una comida con there is / there are.",
+    "Adjetivos de comida (delicious, fresh, sweet, roasted)."
+  ];
+  screen.innerHTML = `
+    <span class="qtag">✏️ Holiday Writing Challenge</span>
+    <div class="qtext">Write a short paragraph (4–6 sentences) about a holiday to a different country last year.</div>
+    <p class="lead">Marca cada requisito mientras lo incluyes. Escribe tu párrafo abajo y luego compáralo con el modelo. 😊</p>
+    <div id="reqList">${reqs.map((r,i)=>`<label class="check"><input type="checkbox" onchange="updWrite()"> ${r}</label>`).join("")}</div>
+    <textarea id="writeArea" placeholder="Last year, I went on holiday to..."></textarea>
+    <div class="row">
+      <button class="btn ghost small" onclick="showModel()">👀 Show model answer</button>
+      <button class="btn green" id="wDone" onclick="finishWriting()" disabled>Finish ✓</button>
+    </div>
+    <div id="modelBox"></div>
+    <p class="hint" id="wHint">Marca al menos 5 requisitos para terminar. ✍️</p>
+  `;
+}
+function updWrite(){
+  const n=document.querySelectorAll('#reqList input:checked').length;
+  $('wDone').disabled = n<5;
+  $('wHint').textContent = n<5? `Has marcado ${n}/6 requisitos. Marca al menos 5 para terminar. ✍️`
+    : `¡Genial, ${n}/6! Ya puedes terminar. 🎉`;
+}
+function showModel(){
+  $('modelBox').innerHTML = `<div class="model">
+    <b>Model answer:</b><br>
+    "Last year, I went on holiday to Italy, and the Italian people were very friendly. The weather was warm and sunny every day. One afternoon, I ate fresh pasta and saw the beautiful old city of Rome. In the small restaurants, there is delicious homemade pizza, and there are sweet desserts on every table. It was an absolutely amazing trip!"
+    <br><br>👉 <b>Compara con el tuyo:</b> ¿incluiste país + nacionalidad (Italy/Italian), el clima (warm, sunny), dos verbos irregulares (went, ate, saw), there is/there are y adjetivos de comida (fresh, delicious, sweet)?
+  </div>`;
+}
+function finishWriting(){
+  const n=document.querySelectorAll('#reqList input:checked').length;
+  recordTopic("write", n>=5);
+  state.score += n*5;
+  state.answered++;
+  state.writingDone=true;
+  state.badges["writer"]=true;
+  updateHud();
+  flashMsg("🖊️ ¡Insignia ganada: Holiday Writer!");
+  finishModule();
+}
+
+/* -------- finish a module -------- */
+function finishModule(){
+  const m=ALL[state.modIndex];
+  state.modDone[m.id]=true;
+  // award badge based on module's badge field & topic performance
+  if(m.badge){
+    // require decent performance for grammar/reading/vocab; writer handled separately
+    state.badges[m.badge]=true;
+  }
+  // recompute vocab badge only if modules 3,5,6 done
+  updateHud();
+  const isFinal = m.id==="final";
+  if(isFinal){ results(); return; }
+  // module summary
+  let earned = m.badge && BADGE_DEFS[m.badge] ? `<div class="papa" style="background:linear-gradient(135deg,#f6c343,#ffe08a)">🏅 Insignia: <b>${BADGE_DEFS[m.badge].name}</b> ${BADGE_DEFS[m.badge].emoji}</div>`:"";
+  const allDone = MODULES.every(mm=>state.modDone[mm.id]);
+  screen.innerHTML = `
+    <div class="globe">${m.icon}✨</div>
+    <h2 class="center">¡Módulo completado!</h2>
+    <p class="lead center"><b>${m.title}</b> terminado. ¡Buen trabajo, Mía! 🌟</p>
+    ${earned}
+    ${renderBadges()}
+    <div class="row">
+      <button class="btn ghost" onclick="showMap()">🗺️ Mapa</button>
+      ${allDone? `<button class="btn green" onclick="openModule(${ALL.length-1})">🏆 Reto final</button>`
+                : `<button class="btn green" onclick="nextModule()">Siguiente módulo →</button>`}
+    </div>
+  `;
+}
+function nextModule(){
+  // go to next not-done module
+  for(let i=0;i<MODULES.length;i++){ if(!state.modDone[MODULES[i].id]){ openModule(i); return; } }
+  showMap();
+}
+
+/* ============================ RESULTS ============================ */
+function results(){
+  const totalAnswered=state.answered;
+  // accuracy from topics
+  let c=0,t=0; Object.values(state.topic).forEach(o=>{c+=o.c;t+=o.t;});
+  const acc = t? Math.round(c/t*100):0;
+  // strongest & weakest topics
+  let arr = Object.keys(state.topic).map(k=>{
+    const o=state.topic[k]; return {k, name:TOPIC_NAMES[k]||k, pct:o.t?o.c/o.t:0, c:o.c, t:o.t};
+  });
+  arr.sort((a,b)=>b.pct-a.pct);
+  const strong = arr.filter(x=>x.pct>=0.7);
+  const weak = arr.filter(x=>x.pct<0.7);
+  const strongHtml = (strong.length?strong:arr.slice(0,2)).map(x=>
+    `<div class="ti good">✅ ${x.name}<span>${Math.round(x.pct*100)}%</span></div>`).join("");
+  const weakHtml = weak.length? weak.map(x=>
+    `<div class="ti bad">📌 ${x.name}<span>${Math.round(x.pct*100)}%</span></div>`).join("")
+    : `<div class="ti good">🎉 ¡Ningún tema débil! Excelente dominio.</div>`;
+
+  let reco;
+  if(acc>=85) reco="¡Excelente, Mía! Dominas casi todos los temas. Repasa una vez más los verbos irregulares y estarás lista para la evaluación. 💪";
+  else if(acc>=60) reco="¡Vas muy bien! Concéntrate en los temas marcados con 📌. Vuelve a jugar los módulos donde fallaste y repasa con papá. 📚";
+  else reco="¡Buen esfuerzo! Vale la pena repasar la guía resuelta con papá y volver a jugar. Practica los temas marcados con 📌 sin prisa. Tú puedes. 🌱";
+
+  const badgeCount=Object.keys(state.badges).filter(k=>state.badges[k]).length;
+  const modCount=Object.keys(state.modDone).filter(k=>state.modDone[k]).length;
+
+  screen.innerHTML = `
+    <div class="globe">🏆🌟</div>
+    <h1 class="center">¡Misión completada!</h1>
+    <div class="score-big">${state.score}</div>
+    <div class="score-lbl">puntos totales ⭐</div>
+    <div class="stats">
+      <div class="stat"><div class="n">${acc}%</div><div class="l">Aciertos</div></div>
+      <div class="stat"><div class="n">${c}/${t}</div><div class="l">Correctas</div></div>
+      <div class="stat"><div class="n">${modCount}/8</div><div class="l">Módulos</div></div>
+      <div class="stat"><div class="n">${badgeCount}/4</div><div class="l">Insignias</div></div>
+    </div>
+    ${renderBadges()}
+    <h2>💪 Temas más fuertes</h2>
+    <div class="topiclist">${strongHtml}</div>
+    <h2>📌 Temas para reforzar</h2>
+    <div class="topiclist">${weakHtml}</div>
+    <div class="reco"><b>📋 Recomendación de estudio:</b><br>${reco}</div>
+    <div class="papa">👨‍👧 «Muéstrale esta pantalla a papá para revisar juntos el resultado.»</div>
+    <div class="row">
+      <button class="btn ghost" onclick="restart()">🔁 Jugar otra vez</button>
+      <button class="btn green" onclick="showMap()">🗺️ Volver al mapa</button>
+    </div>
+  `;
+}
+function restart(){
+  state={score:0,lives:3,maxLives:3,totalQ:0,answered:0,topic:{},modIndex:-1,qIndex:0,modDone:{},badges:{},writingDone:false};
+  ALL.forEach(m=>{ if(m.questions) state.totalQ+=m.questions.length; if(m.classify) {} });
+  state.totalQ+=1;
+  ALL.forEach(m=>{ if(m._state) delete m._state; if(m._classDone) delete m._classDone; });
+  start();
+}
+
+/* init */
+start();
+</script>
+</body>
+</html>
